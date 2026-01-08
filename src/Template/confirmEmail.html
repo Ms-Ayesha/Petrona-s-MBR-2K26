@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Account Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        .email-container {
+            max-width: 650px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header img {
+            width: 100%;
+            display: block;
+        }
+        .content {
+            padding: 30px 25px;
+            text-align: center;
+        }
+        h2 {
+            color: #007b8f;
+            margin-bottom: 15px;
+        }
+        .details p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        a.button {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 12px 25px;
+            background-color: #007b8f;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .footer {
+            font-size: 12px;
+            color: #888;
+            padding: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <img src="https://i.ibb.co/T2hQ8hk/mbr-banner.png" alt="MBR 2026 Banner">
+    </div>
+    <div class="content">
+      <h2>Dear {{name}},</h2>
+      <p>Thank you for registering with the MBR Platform!</p>
+      <p>Your account has been created with the following details:</p>
+      <div class="details">
+        <p><strong>Company:</strong> {{company}}</p>
+        <p><strong>Designation:</strong> {{designation}}</p>
+        <p><strong>Country:</strong> {{country}}</p>
+      </div>
+      <p>To complete your registration and activate your account, please click the button below:</p>
+      <a class="button" href="{{activationLink}}">Activate My Account</a>
+      <p>This link is valid for 24 hours.</p>
+      <p>If you did not register, please ignore this email.</p>
+    </div>
+    <div class="footer">
+      For support, contact: <a href="mailto:mbr-query@petronas.com.my">mbr-query@petronas.com.my</a>
+    </div>
+  </div>
+</body>
+</html>
