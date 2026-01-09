@@ -13,25 +13,30 @@ const signup = async (req, res) => {
     const { name, email, password, phone, company, country, designation } = req.body;
 
     try {
-        const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
+        const existingUser = await User.findOne({
+            email: email.trim().toLowerCase()
+        });
+
         if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" });
+            return res.status(400).json({
+                message: "Email already exists"
+            });
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
             name,
             email: email.trim().toLowerCase(),
-            password: hashedPassword,
+            password, // plain password here
             phone,
             company,
             country,
             designation,
-            status: false,
         });
+
         const activationToken = generateToken({ id: newUser._id }, "24h");
 
         const activationLink = `${process.env.BACKEND_URL}/api/auth/activate/${activationToken}`;
+
         await sendEmail(
             newUser.email,
             "Activate Your MBR Account",
@@ -40,11 +45,20 @@ const signup = async (req, res) => {
         );
 
         return res.status(201).json({
-            message: "Registration successful! Please check your email and click the activation link.",
+            message: "Please check your email and click the activation link.",
         });
+
     } catch (err) {
+        if (err.name === "ValidationError") {
+            return res.status(400).json({
+                message: Object.values(err.errors)[0].message
+            });
+        }
+
         console.error("Signup error:", err);
-        return res.status(500).json({ message: "Server error" });
+        return res.status(500).json({
+            message: "Server error"
+        });
     }
 };
 
@@ -100,11 +114,8 @@ const login = async (req, res) => {
             return res.status(400).json({ message: "Please activate your account by clicking the link in your email" });
         }
 
-        const token = generateToken({ id: user._id }, "24h");
-
         return res.json({
             message: "Login successful",
-            token,
             user: {
                 name: user.name,
                 email: user.email,
@@ -166,19 +177,30 @@ const resetPassword = async (req, res) => {
             resetTokenExpire: { $gt: Date.now() },
         });
 
-        if (!user) return res.status(400).json({ message: "Invalid or expired reset token" });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired reset token" });
+        }
 
-        user.password = await bcrypt.hash(password, 10);
-        user.resetToken = undefined;
-        user.resetTokenExpire = undefined;
-        await user.save();
+        user.password = password;
+        user.resetToken = null;
+        user.resetTokenExpire = null;
+
+        await user.save(); 
 
         res.json({ message: "Password reset successfully" });
+
     } catch (err) {
+        if (err.name === "ValidationError") {
+            return res.status(400).json({
+                message: Object.values(err.errors)[0].message
+            });
+        }
+
         console.error("Reset password error:", err);
         res.status(400).json({ message: "Invalid or expired token" });
     }
 };
+
 
 module.exports = {
     signup,
