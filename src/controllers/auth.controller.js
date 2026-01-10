@@ -113,6 +113,7 @@ const login = async (req, res) => {
         if (!user.status) {
             return res.status(400).json({ message: "Please activate your account by clicking the link in your email" });
         }
+        const token = generateToken({ id: user._id }, "24h");
 
         return res.json({
             message: "Login successful",
@@ -124,6 +125,7 @@ const login = async (req, res) => {
                 country: user.country,
                 designation: user.designation,
             },
+            token,
         });
     } catch (err) {
         console.error("Login error:", err);
@@ -185,7 +187,7 @@ const resetPassword = async (req, res) => {
         user.resetToken = null;
         user.resetTokenExpire = null;
 
-        await user.save(); 
+        await user.save();
 
         res.json({ message: "Password reset successfully" });
 
