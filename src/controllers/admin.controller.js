@@ -11,7 +11,6 @@ const createAdmin = async (req, res) => {
             });
         }
         await Admin.create(req.body);
-
         res.status(201).json({
             message: "Admin created successfully",
         });
@@ -31,25 +30,23 @@ const adminLogin = async (req, res) => {
     }
     try {
         const admin = await Admin.findOne({ email });
-
         if (!admin) {
             return res.status(401).json({
-                message: "Invalid email or password",
+                message: "Invalid email",
             });
         }
         const isMatch = await bcrypt.compare(password, admin.password);
 
         if (!isMatch) {
             return res.status(401).json({
-                message: "Invalid email or password",
+                message: "Invalid password",
             });
         }
         const token = generateToken({
             id: admin._id,
-            role: "admin",
         });
         res.status(200).json({
-             message: "Admin Login successful",
+            message: "Admin Login successful",
             token,
         });
     } catch (error) {
