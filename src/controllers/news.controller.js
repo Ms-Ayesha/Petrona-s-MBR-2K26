@@ -23,6 +23,7 @@ const createNew = async (req, res) => {
     }
 };
 
+
 const getAllNews = async (req, res) => {
     try {
         const news = await News.find().sort({ createdAt: -1 });
