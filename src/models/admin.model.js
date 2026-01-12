@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 const adminSchema = new mongoose.Schema(
     {
-          name: {
+        name: {
             type: String,
             required: [true, "Name is required"],
             trim: true,
@@ -27,6 +27,10 @@ const adminSchema = new mongoose.Schema(
                 /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
                 "Password must contain uppercase, lowercase, number and special character"
             ]
+        },
+        token: {
+            type: String,
+            default: null,
         },
     }
 );

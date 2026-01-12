@@ -10,10 +10,26 @@ const createAdmin = async (req, res) => {
                 message: "Admin already exists",
             });
         }
-        await Admin.create(req.body);
+
+        const { name, email, password } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                message: "Name, email, and password are required",
+            });
+        }
+
+        const newAdmin = await Admin.create({ name, email, password });
+
         res.status(201).json({
             message: "Admin created successfully",
+            admin: {
+                id: newAdmin._id,
+                name: newAdmin.name,
+                email: newAdmin.email,
+            }
         });
+
     } catch (error) {
         res.status(400).json({
             message: error.message,
@@ -49,7 +65,9 @@ const adminLogin = async (req, res) => {
             id: admin._id,
         });
 
-        // ✅ REQUIRED RESPONSE FORMAT
+        admin.token = token;
+        await admin.save();
+        
         res.status(200).json({
             message: "Login successful",
             token,
@@ -66,7 +84,6 @@ const adminLogin = async (req, res) => {
         });
     }
 };
-
 
 module.exports = {
     createAdmin,

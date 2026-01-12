@@ -95,7 +95,6 @@ const activateAccount = async (req, res) => {
     `);
     }
 };
-
 const login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -113,7 +112,11 @@ const login = async (req, res) => {
         if (!user.status) {
             return res.status(400).json({ message: "Please activate your account by clicking the link in your email" });
         }
-        const token = generateToken({ id: user._id }, "24h");
+
+        const token = jwt.sign({ id: user._id }, secret, { expiresIn: "24h" });
+
+        user.authToken = token;
+        await user.save();
 
         return res.json({
             message: "Login successful",
@@ -132,6 +135,7 @@ const login = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
