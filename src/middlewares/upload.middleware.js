@@ -1,21 +1,42 @@
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("../config/cloudinary");
+const cloudinary = require("cloudinary").v2;
+const streamifier = require("streamifier");
+
+// Multer in memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 /**
- * Dynamic upload middleware for any controller
- * @param {string} folder - Cloudinary folder name
+ * Upload middleware to Cloudinary dynamically
+ * @param {string} folder - Cloudinary folder
  */
-const createUpload = (folder) => {
-    const storage = new CloudinaryStorage({
-        cloudinary: cloudinary,
-        params: {
-            folder: folder,
-            allowed_formats: ["jpg", "jpeg", "png"],
-        },
-    });
+const uploadToCloudinary = (folder) => {
+    return async (req, res, next) => {
+        if (!req.file) return next();
 
-    return multer({ storage });
+        const bufferStream = streamifier.createReadStream(req.file.buffer);
+
+        const streamUpload = () => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder },
+                    (error, result) => {
+                        if (result) resolve(result);
+                        else reject(error);
+                    }
+                );
+                bufferStream.pipe(stream);
+            });
+        };
+
+        try {
+            const result = await streamUpload();
+            req.file.path = result.secure_url; // overwrite path with Cloudinary URL
+            next();
+        } catch (err) {
+            next(err);
+        }
+    };
 };
 
-module.exports = createUpload;
+module.exports = { upload, uploadToCloudinary };
