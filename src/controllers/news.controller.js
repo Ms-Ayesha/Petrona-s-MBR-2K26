@@ -2,7 +2,16 @@ const News = require("../models/news.model");
 
 const createNew = async (req, res) => {
     try {
-        const { image, text1, text2 } = req.body;
+        const { text1, text2 } = req.body;
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Image is required",
+            });
+        }
+
+        const image = req.file.path;
 
         const news = await News.create({
             image,
@@ -22,7 +31,6 @@ const createNew = async (req, res) => {
         });
     }
 };
-
 
 const getAllNews = async (req, res) => {
     try {
@@ -65,9 +73,15 @@ const getNewById = async (req, res) => {
 
 const updateNew = async (req, res) => {
     try {
+        const updateData = { ...req.body };
+
+        if (req.file) {
+            updateData.image = req.file.path;
+        }
+
         const news = await News.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             { new: true, runValidators: true }
         );
 

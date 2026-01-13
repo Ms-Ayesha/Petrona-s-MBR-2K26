@@ -1,16 +1,32 @@
-// index.js / server.js / app.js
+// app.js (or index.js / server.js)
+const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
-const connectDB = require("./config/db"); // your updated db file
-
-// Import routes
+const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
 const adminRoutes = require("./routes/admin.routes");
-const itemRoutes = require("./routes/catelog.routes"); // note: probably typo → catalog.routes?
+const itemRoutes = require("./routes/catelog.routes"); // consider renaming to catalog.routes
 const newRoutes = require("./routes/news.routes");
 
-dotenv.config();
+// ────────────────────────────────────────────────
+dotenv.config();  // MUST come first
+
+// Configure cloudinary HERE — immediately after dotenv
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Quick debug log (keep for now, remove later)
+console.log("Cloudinary loaded with:", {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "MISSING",
+  api_key:    process.env.CLOUDINARY_API_KEY    ? "present" : "MISSING",
+  api_secret: process.env.CLOUDINARY_API_SECRET ? "present" : "MISSING",
+});
+// ────────────────────────────────────────────────
 
 const app = express();
 
@@ -18,7 +34,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Optional: global error handler (good practice)
+// Your global error handler...
 app.use((err, req, res, next) => {
   console.error("Global error:", err.stack);
   res.status(500).json({
@@ -27,29 +43,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-// IMPORTANT: Do NOT call connectDB() here at the top level anymore!
-// We will connect lazily inside routes or via middleware
-
-// Option 1: Add DB connection middleware to all API routes (recommended)
+// DB lazy connection middleware
 const ensureDBConnected = async (req, res, next) => {
   try {
     await connectDB();
     next();
   } catch (err) {
-    console.error("Database connection failed in middleware:", err.message);
+    console.error("Database connection failed:", err.message);
     res.status(503).json({ 
-      message: "Database service is temporarily unavailable. Please try again later." 
+      message: "Database service temporarily unavailable" 
     });
   }
 };
 
-// Apply to all API routes
 app.use("/api", ensureDBConnected);
-
-// Or apply individually if you prefer:
-// app.use("/api/auth", ensureDBConnected, authRoutes);
-// app.use("/api/admin", ensureDBConnected, adminRoutes);
-// etc.
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -57,23 +64,18 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/news", newRoutes);
 
-// Optional: health check endpoint (very useful in Lambda / ECS / etc.)
+// Health check
 app.get("/health", (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+  // Note: mongoose is not imported here — add if needed or remove dbStatus
   res.status(200).json({
     status: "ok",
-    database: dbStatus,
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });
 });
 
-// For Lambda: export the app (using serverless-http or similar)
-module.exports = app;
-
-// If you're running locally with node:
-// (uncomment for local dev)
+// For local development (uncomment if needed)
 // const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = app;
