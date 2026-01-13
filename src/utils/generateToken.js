@@ -5,4 +5,5 @@ const generateToken = (payload) => {
   return jwt.sign(payload, secret, { expiresIn });
 };
 
+
 module.exports = generateToken;
