@@ -10,32 +10,35 @@ const storage = multer.memoryStorage();
 const createUpload = (folder) => {
   const upload = multer({ storage });
 
+  const middleware = async (req, res, next) => {
+    upload.single("image")(req, res, async (err) => {
+      if (err) return next(err);
+
+      if (!req.file) return next();
+
+      try {
+        const result = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream(
+            { folder },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          ).end(req.file.buffer);
+        });
+
+        // 🔥 Preserve old behavior
+        req.file.path = result.secure_url;
+
+        next();
+      } catch (error) {
+        next(error);
+      }
+    });
+  };
+
   return {
-    single: (field) => [
-      upload.single(field),
-      async (req, res, next) => {
-        if (!req.file) return next();
-
-        try {
-          const result = await new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream(
-              { folder },
-              (error, result) => {
-                if (error) reject(error);
-                else resolve(result);
-              }
-            ).end(req.file.buffer);
-          });
-
-          // 🔥 THIS LINE PRESERVES YOUR FUNCTIONALITY
-          req.file.path = result.secure_url;
-
-          next();
-        } catch (err) {
-          next(err);
-        }
-      },
-    ],
+    single: () => middleware,
   };
 };
 
