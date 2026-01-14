@@ -1,5 +1,5 @@
 const dotenv = require("dotenv");
-dotenv.config(); // MUST be first
+dotenv.config(); // Must be first
 
 const express = require("express");
 const cors = require("cors");
@@ -17,14 +17,14 @@ app.use(express.json());
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error("Global error:", err.stack);
+  console.error("Global error:", err);
   res.status(500).json({
     message: "Something went wrong on the server",
     error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
-// DB middleware
+// DB connection middleware
 const ensureDBConnected = async (req, res, next) => {
   try {
     await connectDB();

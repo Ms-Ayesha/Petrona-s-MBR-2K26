@@ -1,15 +1,18 @@
-// middlewares/upload.middleware.js
 const multer = require("multer");
 const cloudinary = require("../config/cloudinary");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+/**
+ * Middleware factory for single file upload to Cloudinary
+ * @param {string} folder - Cloudinary folder name
+ */
 const createUpload = (folder) => {
   return {
     single: () => async (req, res, next) => {
       try {
-        // Wrap multer in a promise
+        // Wrap multer single file upload in a Promise
         await new Promise((resolve, reject) => {
           upload.single("image")(req, res, (err) => {
             if (err) reject(err);
@@ -17,7 +20,7 @@ const createUpload = (folder) => {
           });
         });
 
-        // If no file, skip Cloudinary
+        // If no file uploaded, skip Cloudinary
         if (!req.file) return next();
 
         // Upload buffer to Cloudinary
@@ -32,7 +35,9 @@ const createUpload = (folder) => {
           stream.end(req.file.buffer);
         });
 
+        // Set Cloudinary URL for controller
         req.file.path = result.secure_url;
+
         next();
       } catch (err) {
         console.error("Upload middleware error:", err);
