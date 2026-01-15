@@ -25,15 +25,21 @@ app.use((err, req, res, next) => {
 });
 
 // DB connection middleware
+// in src/app.js
 const ensureDBConnected = async (req, res, next) => {
   try {
-    await connectDB();
+    await connectDB(); // now safe & fast on warm invocations
     next();
   } catch (err) {
-    console.error("Database connection failed:", err.message);
-    res.status(503).json({ message: "Database service temporarily unavailable" });
+    console.error("DB connection error in middleware:", err.message);
+    return res.status(503).json({
+      success: false,
+      message: "Database connection unavailable – please try again soon",
+    });
   }
 };
+
+
 app.use("/api", ensureDBConnected);
 
 // Routes
