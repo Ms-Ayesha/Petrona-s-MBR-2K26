@@ -13,7 +13,7 @@ const newRoutes = require("./routes/news.routes");
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+
 
 // Global error handler
 app.use((err, req, res, next) => {
@@ -25,21 +25,15 @@ app.use((err, req, res, next) => {
 });
 
 // DB connection middleware
-// in src/app.js
 const ensureDBConnected = async (req, res, next) => {
   try {
-    await connectDB(); // now safe & fast on warm invocations
+    await connectDB();
     next();
   } catch (err) {
-    console.error("DB connection error in middleware:", err.message);
-    return res.status(503).json({
-      success: false,
-      message: "Database connection unavailable – please try again soon",
-    });
+    console.error("Database connection failed:", err.message);
+    res.status(503).json({ message: "Database service temporarily unavailable" });
   }
 };
-
-
 app.use("/api", ensureDBConnected);
 
 // Routes
@@ -47,6 +41,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/news", newRoutes);
+
+app.use((req, res, next) => {
+  if (req.headers["content-type"]?.includes("multipart/form-data")) {
+    return next(); // let multer handle it
+  }
+  express.json()(req, res, next);
+});
+
 
 // Health check
 app.get("/health", (req, res) => {
