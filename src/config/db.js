@@ -1,70 +1,68 @@
 // src/config/db.js
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 let cachedConnection = null;
 let isConnecting = false;
 
 const connectDB = async () => {
-  // Already connected → reuse
   if (cachedConnection && mongoose.connection.readyState === 1) {
+    console.log('Reusing existing MongoDB connection');
     return cachedConnection;
   }
 
-  // Already connecting → wait for it (prevents multiple parallel attempts)
   if (isConnecting) {
-    console.log("Waiting for existing MongoDB connection...");
+    console.log('Waiting for ongoing MongoDB connection...');
     return new Promise((resolve) => {
-      const check = setInterval(() => {
+      const interval = setInterval(() => {
         if (mongoose.connection.readyState === 1) {
-          clearInterval(check);
+          clearInterval(interval);
           resolve(cachedConnection);
         }
-      }, 100);
+      }, 200);
     });
   }
 
   isConnecting = true;
-  console.log("Establishing MongoDB connection...");
+  console.log('Connecting to MongoDB Atlas...');
 
   try {
     const options = {
-      dbName: "MBR_2K26",
-      connectTimeoutMS: 30000,          // more generous for cold starts
-      serverSelectionTimeoutMS: 30000,
+      dbName: 'MBR_2K26',
+      connectTimeoutMS: 45000,           // increased
+      serverSelectionTimeoutMS: 45000,   // increased (critical!)
       socketTimeoutMS: 60000,
-      maxPoolSize: 3,                   // very conservative for Vercel
+      maxPoolSize: 3,                    // small pool for serverless
       minPoolSize: 0,
-      maxIdleTimeMS: 10000,             // close idle connections faster
-      family: 4,                        // prefer IPv4 (helps in some regions)
+      maxIdleTimeMS: 10000,
+      family: 4,                         // force IPv4 (helps in some regions)
+      retryWrites: true,                 // already in URI, but explicit
+      // compressors: ['zlib'],          // optional: can help if bandwidth-limited
     };
 
     const conn = await mongoose.connect(process.env.MONGO_URI, options);
-
-    console.log(`MongoDB Connected → ${conn.connection.host}`);
+    console.log(`MongoDB Connected → Host: ${conn.connection.host}`);
 
     cachedConnection = conn;
-
-    // Reset connecting flag
     isConnecting = false;
 
-    // Debug listeners
-    mongoose.connection.on("error", (err) => {
-      console.error("Mongoose error:", err.message);
+    mongoose.connection.on('error', (err) => {
+      console.error('Mongoose error:', err.message);
       cachedConnection = null;
       isConnecting = false;
     });
 
-    mongoose.connection.on("disconnected", () => {
-      console.log("Mongoose disconnected → next request will reconnect");
+    mongoose.connection.on('disconnected', () => {
+      console.log('Mongoose disconnected');
       cachedConnection = null;
       isConnecting = false;
     });
 
     return conn;
-  } catch (err) {
+  } catch (error) {
     isConnecting = false;
-    console.error("MongoDB connection failed:", err.message);
-    throw err; // caller should catch & return 503 / 500
+    console.error('MongoDB connection FAILED:', error.message);
+    console.error(error.stack);
+    throw error;
   }
 };
 
