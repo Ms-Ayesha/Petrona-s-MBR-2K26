@@ -127,6 +127,23 @@ const deleteNew = async (req, res) => {
         });
     }
 };
+router.get('/debug-db', async (req, res) => {
+  try {
+    await connectDB();
+    const state = mongoose.connection.readyState;
+    res.status(200).json({
+      success: true,
+      dbState: state, // 1 = connected
+      host: mongoose.connection.host || 'not connected',
+    });
+  } catch (err) {
+    res.status(503).json({
+      success: false,
+      error: err.message,
+      stack: err.stack,
+    });
+  }
+});
 
 module.exports = {
     createNew,
