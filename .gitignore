@@ -3,4 +3,7 @@ node_modules/
 
 # Ignore environment variables
 .env
-uploads/
+
+package-lock.json
+
+package.json
