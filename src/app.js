@@ -9,6 +9,8 @@ const authRoutes = require("./routes/auth.routes");
 const adminRoutes = require("./routes/admin.routes");
 const itemRoutes = require("./routes/catelog.routes");
 const newRoutes = require("./routes/news.routes");
+const contactRoutes = require("./routes/contact.routes");
+
 
 const app = express();
 
@@ -41,6 +43,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/news", newRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

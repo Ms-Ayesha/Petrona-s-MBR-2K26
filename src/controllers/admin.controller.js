@@ -4,13 +4,6 @@ const generateToken = require("../utils/generateToken");
 
 const createAdmin = async (req, res) => {
     try {
-        const adminExists = await Admin.findOne();
-        if (adminExists) {
-            return res.status(400).json({
-                message: "Admin already exists",
-            });
-        }
-
         const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
@@ -19,7 +12,18 @@ const createAdmin = async (req, res) => {
             });
         }
 
-        const newAdmin = await Admin.create({ name, email, password });
+        const emailExists = await Admin.findOne({ email });
+        if (emailExists) {
+            return res.status(400).json({
+                message: "Admin with this email already exists",
+            });
+        }
+
+        const newAdmin = await Admin.create({
+            name,
+            email,
+            password,
+        });
 
         res.status(201).json({
             message: "Admin created successfully",
@@ -27,11 +31,11 @@ const createAdmin = async (req, res) => {
                 id: newAdmin._id,
                 name: newAdmin.name,
                 email: newAdmin.email,
-            }
+            },
         });
 
     } catch (error) {
-        res.status(400).json({
+        res.status(500).json({
             message: error.message,
         });
     }
@@ -67,7 +71,7 @@ const adminLogin = async (req, res) => {
 
         admin.token = token;
         await admin.save();
-        
+
         res.status(200).json({
             message: "Login successful",
             token,
