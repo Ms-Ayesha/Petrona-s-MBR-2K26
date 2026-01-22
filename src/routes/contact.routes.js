@@ -7,14 +7,7 @@ const createUpload = require("../middlewares/upload.middleware");
 
 const upload = createUpload("contact_images");
 
-const {
-    createContact,
-    getAllContacts,
-    getContactById,
-    updateContact,
-    deleteContact,
-} = require("../controllers/contact.controller");
-
+const { createContact, getAllContacts, getContactById, updateContact, deleteContact, } = require("../controllers/contact.controller");
 
 router.get("/", authMiddleware, getAllContacts);
 router.get("/:id", authMiddleware, getContactById);

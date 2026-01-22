@@ -26,6 +26,7 @@ const createContact = async (req, res) => {
             message: "Contact created successfully",
             data: contact,
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -49,6 +50,7 @@ const getAllContacts = async (req, res) => {
                 ),
             },
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -73,6 +75,7 @@ const getContactById = async (req, res) => {
             success: true,
             data: contact,
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -108,6 +111,7 @@ const updateContact = async (req, res) => {
             message: "Contact updated successfully",
             data: contact,
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -131,6 +135,7 @@ const deleteContact = async (req, res) => {
             success: true,
             message: "Contact deleted successfully",
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,

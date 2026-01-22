@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
+
 const adminMiddleware = require("../middlewares/admin.middleware");
 const createUpload = require("../middlewares/upload.middleware");
-const upload = createUpload("catalog_items");
 const authMiddleware = require("../middlewares/auth.middleware");
+
+const upload = createUpload("catalog_items");
 
 const { getItems, getItemById, createItem, updateItem, deleteItem } = require("../controllers/catelog.controller");
 

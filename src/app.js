@@ -10,6 +10,10 @@ const adminRoutes = require("./routes/admin.routes");
 const itemRoutes = require("./routes/catelog.routes");
 const newRoutes = require("./routes/news.routes");
 const contactRoutes = require("./routes/contact.routes");
+const stationPdf = require("./routes/stationPdf.routes");
+const stationMail = require("./routes/stationMail.routes");
+
+
 
 const app = express();
 
@@ -35,6 +39,7 @@ const ensureDBConnected = async (req, res, next) => {
     res.status(503).json({ message: "Database service temporarily unavailable" });
   }
 };
+
 app.use("/api", ensureDBConnected);
 
 // Routes
@@ -43,6 +48,11 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/news", newRoutes);
 app.use("/api/contacts", contactRoutes);
+app.use("/api/stationPdf", stationPdf);
+app.use("/api/stationMail", stationMail);
+
+
+
 
 // Health check
 app.get("/health", (req, res) => {
