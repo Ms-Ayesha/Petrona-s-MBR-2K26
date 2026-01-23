@@ -1,4 +1,6 @@
 const StationPdf = require("../models/stationPdf.model");
+const cloudinary = require("../config/cloudinary");
+
 async function createOrUpdatePdf(req, res) {
     try {
         const { stationName } = req.body;

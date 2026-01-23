@@ -13,8 +13,6 @@ const contactRoutes = require("./routes/contact.routes");
 const stationPdf = require("./routes/stationPdf.routes");
 const stationMail = require("./routes/stationMail.routes");
 
-
-
 const app = express();
 
 app.use(cors());
@@ -61,6 +59,11 @@ app.get("/health", (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
 
 module.exports = app;
