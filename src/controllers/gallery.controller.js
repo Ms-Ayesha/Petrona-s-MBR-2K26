@@ -21,6 +21,7 @@ async function createGalleryImages(req, res) {
 
         let gallery = await Gallery.findOne({ year, section });
 
+        // Store uploaded files in DB
         const newImages = req.files.map((file) => ({
             url: file.path,
             cloudinaryId: file.cloudinaryId
@@ -33,8 +34,16 @@ async function createGalleryImages(req, res) {
             gallery = await Gallery.create({ year, section, images: newImages });
         }
 
-        // 🔹 Only return the newly uploaded images
-        res.status(201).json({ message: "Images uploaded successfully", data: newImages });
+        // 🔹 Response: full gallery structure but only uploaded images in `images`
+        const response = {
+            _id: gallery._id,
+            year: gallery.year,
+            section: gallery.section,
+            images: newImages // only the images just uploaded
+        };
+
+        res.status(201).json({ message: "Images uploaded successfully", data: response });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
