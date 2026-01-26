@@ -59,43 +59,40 @@ const createUpload = (folder) => {
       }
     },
 
-array: (fieldName = "images", limit = 10) => async (req, res, next) => {
-  try {
-    await new Promise((resolve, reject) => {
-      upload.array(fieldName, limit)(req, res, (err) => (err ? reject(err) : resolve()));
-    });
+   
+    array: (fieldName = "images", limit = 10) => async (req, res, next) => {
+      try {
+        await new Promise((resolve, reject) => {
+          upload.array(fieldName, limit)(req, res, (err) =>
+            err ? reject(err) : resolve()
+          );
+        });
 
-    if (!req.files || req.files.length === 0) return next();
+        if (!req.files || req.files.length === 0) return next();
 
-    const uploadedImages = [];
+        const uploadedImages = [];
 
-    for (const file of req.files) {
-      const result = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder, resource_type: "image" },
-          (error, result) => (error ? reject(error) : resolve(result))
-        );
-        stream.end(file.buffer);
-      });
+        for (const file of req.files) {
+          const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder, resource_type: "image" },
+              (error, result) => (error ? reject(error) : resolve(result))
+            );
+            stream.end(file.buffer);
+          });
 
-      uploadedImages.push({
-        path: result.secure_url,       // <-- change to `url` to match controller
-        cloudinaryId: result.public_id
-      });
+          uploadedImages.push({
+            path: result.secure_url,
+            cloudinaryId: result.public_id
+          });
+        }
+
+        req.files = uploadedImages;
+        next();
+      } catch (error) {
+        next(error);
+      }
     }
-
-    // map path -> url
-    req.files = uploadedImages.map(img => ({
-      url: img.path,
-      cloudinaryId: img.cloudinaryId
-    }));
-
-    next();
-  } catch (error) {
-    next(error);
-  }
-}
-
 
   };
 };
