@@ -21,25 +21,39 @@ async function createGalleryImages(req, res) {
 
         let gallery = await Gallery.findOne({ year, section });
 
-        // Store uploaded files in DB
-        const newImages = req.files.map((file) => ({
-            url: file.path,
-            cloudinaryId: file.cloudinaryId
-        }));
-
-        if (gallery) {
-            gallery.images.push(...newImages);
-            await gallery.save();
-        } else {
-            gallery = await Gallery.create({ year, section, images: newImages });
+        if (!gallery) {
+            // Create gallery if not exists
+            gallery = await Gallery.create({ year, section, images: [] });
         }
 
-        // 🔹 Response: full gallery structure but only uploaded images in `images`
+        // 🔹 Save each uploaded image to DB and get _id
+        const uploadedImages = [];
+        for (const file of req.files) {
+            const newImage = {
+                url: file.path,
+                cloudinaryId: file.cloudinaryId
+            };
+            gallery.images.push(newImage);
+            uploadedImages.push(newImage);
+        }
+
+        await gallery.save();
+
+        // 🔹 Map saved images to include DB _id
+        const responseImages = gallery.images
+            .slice(-req.files.length) // only the newly uploaded images
+            .map(img => ({
+                _id: img._id,
+                url: img.url,
+                cloudinaryId: img.cloudinaryId
+            }));
+
+        // 🔹 Response
         const response = {
             _id: gallery._id,
             year: gallery.year,
             section: gallery.section,
-            images: newImages // only the images just uploaded
+            images: responseImages
         };
 
         res.status(201).json({ message: "Images uploaded successfully", data: response });
