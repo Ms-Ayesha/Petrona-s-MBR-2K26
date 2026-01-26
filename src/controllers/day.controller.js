@@ -1,77 +1,79 @@
 const Day = require("../models/day.model");
-const Year = require("../models/year.model");
 
 const createDay = async (req, res) => {
-    const { yearId } = req.params;
-    const { title } = req.body;
-    if (!title) {
-        return res.status(400).json({ message: "Title is required" });
-    }
     try {
-        const year = await Year.findById(yearId);
-        if (!year) {
-            return res.status(404).json({ message: "Year not found" });
-        }
-        const day = await Day.create({ year: yearId, title });
-        res.status(201).json(day);
+        const { day, year, section } = req.body;
+
+        if (!day || !year || !section)
+            return res.status(400).json({ message: "Day, year and section are required" });
+
+        const newDay = await Day.create({ day, year, section });
+        res.status(201).json(newDay);
+
     } catch (error) {
-        res.status(500).json({ message: "Error creating day" });
+        res.status(500).json({ message: error.message });
     }
 };
 
-const getDaysByYear = async (req, res) => {
-    const { yearId } = req.params;
+const getDays = async (req, res) => {
     try {
-        const days = await Day.find({ year: yearId }).sort({ createdAt: 1 });
+        const { yearId, sectionId } = req.params;
+
+        const days = await Day.find({
+            year: yearId,
+            section: sectionId
+        });
+
         res.json(days);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching days" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const getDayById = async (req, res) => {
-    const { id } = req.params;
     try {
-        const day = await Day.findById(id);
-        if (!day) {
+        const day = await Day.findById(req.params.id);
+        if (!day)
             return res.status(404).json({ message: "Day not found" });
-        }
+
         res.json(day);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching day" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const updateDay = async (req, res) => {
-    const { id } = req.params;
-    const { title } = req.body;
     try {
-        const day = await Day.findByIdAndUpdate(id, { title }, { new: true });
-        if (!day) {
+        const updated = await Day.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+
+        if (!updated)
             return res.status(404).json({ message: "Day not found" });
-        }
-        res.json(day);
+
+        res.json(updated);
     } catch (error) {
-        res.status(500).json({ message: "Error updating day" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const deleteDay = async (req, res) => {
-    const { id } = req.params;
     try {
-        const day = await Day.findByIdAndDelete(id);
-        if (!day) {
+        const deleted = await Day.findByIdAndDelete(req.params.id);
+        if (!deleted)
             return res.status(404).json({ message: "Day not found" });
-        }
+
         res.json({ message: "Day deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting day" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 module.exports = {
     createDay,
-    getDaysByYear,
+    getDays,
     getDayById,
     updateDay,
     deleteDay

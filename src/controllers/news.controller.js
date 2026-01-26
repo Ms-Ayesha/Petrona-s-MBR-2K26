@@ -1,8 +1,18 @@
 const News = require("../models/news.model");
+const cloudinary = require("../config/cloudinary");
 
+/* ===== CREATE NEWS ===== */
 const createNew = async (req, res) => {
     try {
         const { text1, text2 } = req.body;
+
+        // Validation
+        if (!text1 || !text2) {
+            return res.status(400).json({
+                success: false,
+                message: "text1 and text2 are required",
+            });
+        }
 
         if (!req.file) {
             return res.status(400).json({
@@ -11,10 +21,9 @@ const createNew = async (req, res) => {
             });
         }
 
-        const image = req.file.path;
-
         const news = await News.create({
-            image,
+            image: req.file.path,
+            cloudinaryId: req.file.cloudinaryId,
             text1,
             text2,
         });
@@ -32,6 +41,7 @@ const createNew = async (req, res) => {
     }
 };
 
+/* ===== GET ALL NEWS ===== */
 const getAllNews = async (req, res) => {
     try {
         const news = await News.find().sort({ createdAt: -1 });
@@ -48,6 +58,7 @@ const getAllNews = async (req, res) => {
     }
 };
 
+/* ===== GET SINGLE NEWS ===== */
 const getNewById = async (req, res) => {
     try {
         const news = await News.findById(req.params.id);
@@ -71,19 +82,10 @@ const getNewById = async (req, res) => {
     }
 };
 
+/* ===== UPDATE NEWS ===== */
 const updateNew = async (req, res) => {
     try {
-        const updateData = { ...req.body };
-
-        if (req.file) {
-            updateData.image = req.file.path;
-        }
-
-        const news = await News.findByIdAndUpdate(
-            req.params.id,
-            updateData,
-            { new: true, runValidators: true }
-        );
+        const news = await News.findById(req.params.id);
 
         if (!news) {
             return res.status(404).json({
@@ -91,6 +93,22 @@ const updateNew = async (req, res) => {
                 message: "News not found",
             });
         }
+
+        // Update text fields
+        if (req.body.text1) news.text1 = req.body.text1;
+        if (req.body.text2) news.text2 = req.body.text2;
+
+        // If new image uploaded
+        if (req.file) {
+            // Delete old image from Cloudinary
+            await cloudinary.uploader.destroy(news.cloudinaryId);
+
+            // Update with new image
+            news.image = req.file.path;
+            news.cloudinaryId = req.file.cloudinaryId;
+        }
+
+        await news.save();
 
         res.status(200).json({
             success: true,
@@ -105,9 +123,10 @@ const updateNew = async (req, res) => {
     }
 };
 
+/* ===== DELETE NEWS ===== */
 const deleteNew = async (req, res) => {
     try {
-        const news = await News.findByIdAndDelete(req.params.id);
+        const news = await News.findById(req.params.id);
 
         if (!news) {
             return res.status(404).json({
@@ -115,6 +134,12 @@ const deleteNew = async (req, res) => {
                 message: "News not found",
             });
         }
+
+        // Delete image from Cloudinary
+        await cloudinary.uploader.destroy(news.cloudinaryId);
+
+        // Delete from DB
+        await news.deleteOne();
 
         res.status(200).json({
             success: true,

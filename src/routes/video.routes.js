@@ -1,22 +1,16 @@
-const express = require("express");
-const router = express.Router();
-
+const router = require("express").Router();
 const {
-    createVideo,
-    getVideoByDay,
-    getVideoById,
-    updateVideo,
-    deleteVideo
+  createVideo,
+  getVideoByDay,
+  getVideoById,
+  updateVideo,
+  deleteVideo
 } = require("../controllers/video.controller");
 
-router.get("/:dayId", getVideoByDay);
-
-router.get("/single/:id", getVideoById);
-
-router.post("/:dayId", createVideo);
-
+router.post("/", createVideo);
+router.get("/day/:dayId", getVideoByDay);
+router.get("/:id", getVideoById);
 router.put("/:id", updateVideo);
-
 router.delete("/:id", deleteVideo);
 
 module.exports = router;

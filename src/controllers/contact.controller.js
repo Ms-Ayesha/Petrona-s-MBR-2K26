@@ -1,8 +1,18 @@
 const Contact = require("../models/contact.model");
+const cloudinary = require("../config/cloudinary");
 
+/* ===== CREATE CONTACT ===== */
 const createContact = async (req, res) => {
     try {
         const { name, designation, description, category } = req.body;
+
+        // Validation
+        if (!name || !designation || !description || !category) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
 
         if (!req.file) {
             return res.status(400).json({
@@ -11,14 +21,13 @@ const createContact = async (req, res) => {
             });
         }
 
-        const image = req.file.path;
-
         const contact = await Contact.create({
             name,
             designation,
             description,
             category,
-            image,
+            image: req.file.path,
+            cloudinaryId: req.file.cloudinaryId,
         });
 
         res.status(201).json({
@@ -35,20 +44,21 @@ const createContact = async (req, res) => {
     }
 };
 
+/* ===== GET ALL CONTACTS (Dynamic Categories) ===== */
 const getAllContacts = async (req, res) => {
     try {
         const contacts = await Contact.find().sort({ createdAt: -1 });
 
+        // Group contacts by category dynamically
+        const grouped = {};
+        contacts.forEach(contact => {
+            if (!grouped[contact.category]) grouped[contact.category] = [];
+            grouped[contact.category].push(contact);
+        });
+
         res.status(200).json({
             success: true,
-            data: {
-                exploration_blocks: contacts.filter(
-                    c => c.category === "exploration_blocks"
-                ),
-                dro_clusters: contacts.filter(
-                    c => c.category === "dro_clusters"
-                ),
-            },
+            data: grouped,
         });
 
     } catch (error) {
@@ -59,7 +69,7 @@ const getAllContacts = async (req, res) => {
     }
 };
 
-
+/* ===== GET SINGLE CONTACT ===== */
 const getContactById = async (req, res) => {
     try {
         const contact = await Contact.findById(req.params.id);
@@ -84,20 +94,10 @@ const getContactById = async (req, res) => {
     }
 };
 
-
+/* ===== UPDATE CONTACT ===== */
 const updateContact = async (req, res) => {
     try {
-        const updateData = { ...req.body };
-
-        if (req.file) {
-            updateData.image = req.file.path;
-        }
-
-        const contact = await Contact.findByIdAndUpdate(
-            req.params.id,
-            updateData,
-            { new: true, runValidators: true }
-        );
+        const contact = await Contact.findById(req.params.id);
 
         if (!contact) {
             return res.status(404).json({
@@ -105,6 +105,23 @@ const updateContact = async (req, res) => {
                 message: "Contact not found",
             });
         }
+
+        // Update only fields provided in req.body dynamically
+        Object.keys(req.body).forEach(key => {
+            contact[key] = req.body[key];
+        });
+
+        // If new image uploaded
+        if (req.file) {
+            // Delete old image from Cloudinary
+            await cloudinary.uploader.destroy(contact.cloudinaryId);
+
+            // Update new image
+            contact.image = req.file.path;
+            contact.cloudinaryId = req.file.cloudinaryId;
+        }
+
+        await contact.save();
 
         res.status(200).json({
             success: true,
@@ -120,9 +137,10 @@ const updateContact = async (req, res) => {
     }
 };
 
+/* ===== DELETE CONTACT ===== */
 const deleteContact = async (req, res) => {
     try {
-        const contact = await Contact.findByIdAndDelete(req.params.id);
+        const contact = await Contact.findById(req.params.id);
 
         if (!contact) {
             return res.status(404).json({
@@ -130,6 +148,12 @@ const deleteContact = async (req, res) => {
                 message: "Contact not found",
             });
         }
+
+        // Delete image from Cloudinary
+        await cloudinary.uploader.destroy(contact.cloudinaryId);
+
+        // Delete from DB
+        await contact.deleteOne();
 
         res.status(200).json({
             success: true,
@@ -149,5 +173,5 @@ module.exports = {
     getAllContacts,
     getContactById,
     updateContact,
-    deleteContact,
+    deleteContact
 };

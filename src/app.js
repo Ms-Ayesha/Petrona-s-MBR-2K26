@@ -7,11 +7,20 @@ const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/auth.routes");
 const adminRoutes = require("./routes/admin.routes");
+
 const itemRoutes = require("./routes/catelog.routes");
 const newRoutes = require("./routes/news.routes");
 const contactRoutes = require("./routes/contact.routes");
+
 const stationPdf = require("./routes/stationPdf.routes");
 const stationMail = require("./routes/stationMail.routes");
+
+const yearRoutes = require("./routes/year.routes");
+const sectionRoutes = require("./routes/section.routes");
+const dayRoutes = require("./routes/day.routes");
+const videoRoutes = require("./routes/video.routes");
+const galleryRoutes = require("./routes/gallery.routes");
+
 
 const app = express();
 
@@ -43,12 +52,19 @@ app.use("/api", ensureDBConnected);
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+
 app.use("/api/items", itemRoutes);
 app.use("/api/news", newRoutes);
 app.use("/api/contacts", contactRoutes);
+
 app.use("/api/stationPdf", stationPdf);
 app.use("/api/stationMail", stationMail);
 
+app.use("/api/years", yearRoutes);
+app.use("/api/sections", sectionRoutes);
+app.use("/api/days", dayRoutes);
+app.use("/api/videos", videoRoutes);
+app.use("/api/gallery", galleryRoutes);
 
 
 

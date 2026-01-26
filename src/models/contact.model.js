@@ -7,26 +7,28 @@ const contactSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
-
         designation: {
             type: String,
             required: true,
+            trim: true,
         },
-
         description: {
             type: String,
             required: true,
+            trim: true,
         },
-
         image: {
             type: String,
             required: true,
         },
-
+        cloudinaryId: {
+            type: String,
+            required: true,
+        },
         category: {
             type: String,
-            enum: ["exploration_blocks", "dro_clusters"],
             required: true,
+            trim: true
         },
     },
     { timestamps: true }

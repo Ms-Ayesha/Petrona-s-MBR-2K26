@@ -17,6 +17,10 @@ const newSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        cloudinaryId: {
+            type: String,
+            required: true,
+        },
     },
     {
         timestamps: true

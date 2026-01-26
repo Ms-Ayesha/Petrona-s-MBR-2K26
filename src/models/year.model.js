@@ -1,15 +1,11 @@
 const mongoose = require("mongoose");
 
 const yearSchema = new mongoose.Schema({
-
-    title: {
-        type: String,
-        required: true,
-        unique: true
-    }
-},
-    {
-        timestamps: true
-    });
+  year: {
+    type: String,
+    required: true,
+    unique: true
+  }
+}, { timestamps: true });
 
 module.exports = mongoose.model("Year", yearSchema);

@@ -1,60 +1,159 @@
 const Item = require("../models/catelog.model");
+const cloudinary = require("../config/cloudinary");
 
+/* ===== CREATE ITEM ===== */
 const createItem = async (req, res) => {
     try {
         const { title, description } = req.body;
 
-        if (!req.file) return res.status(400).json({ message: "Image is required" });
+        if (!title || !description) {
+            return res.status(400).json({
+                success: false,
+                message: "Title and description are required"
+            });
+        }
 
-        const image = req.file.path;
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Image is required"
+            });
+        }
 
-        const item = await Item.create({ title, description, image });
+        const item = await Item.create({
+            title,
+            description,
+            image: req.file.path,
+            cloudinaryId: req.file.cloudinaryId
+        });
 
-        res.status(201).json({ message: "Item created successfully", item });
+        res.status(201).json({
+            success: true,
+            message: "Item created successfully",
+            data: item
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
+/* ===== UPDATE ITEM ===== */
 const updateItem = async (req, res) => {
     try {
-        const updateData = { ...req.body };
-        if (req.file) updateData.image = req.file.path;
+        const item = await Item.findById(req.params.id);
 
-        const updatedItem = await Item.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found"
+            });
+        }
 
-        res.status(200).json({ message: "Item updated successfully", updatedItem });
+        if (req.body.title) item.title = req.body.title;
+        if (req.body.description) item.description = req.body.description;
+
+        if (req.file) {
+            // Delete old image from Cloudinary
+            await cloudinary.uploader.destroy(item.cloudinaryId);
+
+            // Update new image
+            item.image = req.file.path;
+            item.cloudinaryId = req.file.cloudinaryId;
+        }
+
+        await item.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Item updated successfully",
+            data: item
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
+/* ===== GET ALL ITEMS ===== */
 const getItems = async (req, res) => {
     try {
-        const items = await Item.find();
-        res.status(200).json(items);
+        const items = await Item.find().sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: items
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
+/* ===== GET SINGLE ITEM ===== */
 const getItemById = async (req, res) => {
     try {
         const item = await Item.findById(req.params.id);
-        if (!item) return res.status(404).json({ message: "Item not found" });
-        res.status(200).json(item);
+
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: item
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
+/* ===== DELETE ITEM ===== */
 const deleteItem = async (req, res) => {
     try {
-        await Item.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: "Item deleted successfully" });
+        const item = await Item.findById(req.params.id);
+
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found"
+            });
+        }
+
+        // Delete image from Cloudinary
+        await cloudinary.uploader.destroy(item.cloudinaryId);
+
+        // Delete from DB
+        await item.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: "Item deleted successfully"
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
-module.exports = { createItem, updateItem, getItems, getItemById, deleteItem };
+module.exports = {
+    createItem,
+    updateItem,
+    getItems,
+    getItemById,
+    deleteItem
+};

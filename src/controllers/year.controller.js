@@ -1,64 +1,76 @@
 const Year = require("../models/year.model");
 
 const createYear = async (req, res) => {
-    const { title } = req.body;
-    if (!title) {
-        return res.status(400).json({ message: "Title is required" });
-    }
     try {
-        const year = await Year.create({ title });
-        res.status(201).json(year);
+        const { year } = req.body;
+
+        if (!year)
+            return res.status(400).json({ message: "Year is required" });
+
+        const exists = await Year.findOne({ year });
+        if (exists)
+            return res.status(400).json({ message: "Year already exists" });
+
+        const newYear = await Year.create({ year });
+        res.status(201).json(newYear);
+
     } catch (error) {
-        res.status(500).json({ message: "Error creating year" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const getAllYears = async (req, res) => {
     try {
-        const years = await Year.find().sort({ createdAt: 1 });
+        const years = await Year.find().sort({ year: 1 });
         res.json(years);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching years" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const getYearById = async (req, res) => {
-    const { id } = req.params;
     try {
-        const year = await Year.findById(id);
-        if (!year) {
+        const year = await Year.findById(req.params.id);
+        if (!year)
             return res.status(404).json({ message: "Year not found" });
-        }
+
         res.json(year);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching year" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const updateYear = async (req, res) => {
-    const { id } = req.params;
-    const { title } = req.body;
     try {
-        const year = await Year.findByIdAndUpdate(id, { title }, { new: true });
-        if (!year) {
+        const { year } = req.body;
+
+        if (!year)
+            return res.status(400).json({ message: "Year is required" });
+
+        const updated = await Year.findByIdAndUpdate(
+            req.params.id,
+            { year },
+            { new: true }
+        );
+
+        if (!updated)
             return res.status(404).json({ message: "Year not found" });
-        }
-        res.json(year);
+
+        res.json(updated);
     } catch (error) {
-        res.status(500).json({ message: "Error updating year" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const deleteYear = async (req, res) => {
-    const { id } = req.params;
     try {
-        const year = await Year.findByIdAndDelete(id);
-        if (!year) {
+        const deleted = await Year.findByIdAndDelete(req.params.id);
+        if (!deleted)
             return res.status(404).json({ message: "Year not found" });
-        }
+
         res.json({ message: "Year deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting year" });
+        res.status(500).json({ message: error.message });
     }
 };
 

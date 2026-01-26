@@ -1,83 +1,74 @@
 const Video = require("../models/video.model");
-const Day = require("../models/day.model");
 
 const createVideo = async (req, res) => {
-    const { dayId } = req.params;
-    const { url, timestamps } = req.body;
-    if (!url) {
-        return res.status(400).json({ message: "Video URL is required" });
-    }
     try {
-        const day = await Day.findById(dayId);
-        if (!day) {
-            return res.status(404).json({ message: "Day not found" });
-        }
+        const { videoUrl, timestamps, day } = req.body;
 
-        const existingVideo = await Video.findOne({ day: dayId });
-        if (existingVideo) {
+        if (!videoUrl || !day)
+            return res.status(400).json({ message: "Video URL and day are required" });
+
+        const exists = await Video.findOne({ day });
+        if (exists)
             return res.status(400).json({ message: "Video already exists for this day" });
-        }
-        const video = await Video.create({ day: dayId, url, timestamps });
+
+        const video = await Video.create({ videoUrl, timestamps, day });
         res.status(201).json(video);
+
     } catch (error) {
-        res.status(500).json({ message: "Error creating video" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const getVideoByDay = async (req, res) => {
-    const { dayId } = req.params;
     try {
-        const video = await Video.findOne({ day: dayId });
-        if (!video) {
+        const video = await Video.findOne({ day: req.params.dayId });
+        if (!video)
             return res.status(404).json({ message: "Video not found" });
-        }
+
         res.json(video);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching video" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const getVideoById = async (req, res) => {
-    const { id } = req.params;
     try {
-        const video = await Video.findById(id);
-        if (!video) {
+        const video = await Video.findById(req.params.id);
+        if (!video)
             return res.status(404).json({ message: "Video not found" });
-        }
+
         res.json(video);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching video" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const updateVideo = async (req, res) => {
-    const { id } = req.params;
-    const { url, timestamps } = req.body;
     try {
-        const video = await Video.findByIdAndUpdate(
-            id,
-            { url, timestamps },
+        const updated = await Video.findByIdAndUpdate(
+            req.params.id,
+            req.body,
             { new: true }
         );
-        if (!video) {
+
+        if (!updated)
             return res.status(404).json({ message: "Video not found" });
-        }
-        res.json(video);
+
+        res.json(updated);
     } catch (error) {
-        res.status(500).json({ message: "Error updating video" });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const deleteVideo = async (req, res) => {
-    const { id } = req.params;
     try {
-        const video = await Video.findByIdAndDelete(id);
-        if (!video) {
+        const deleted = await Video.findByIdAndDelete(req.params.id);
+        if (!deleted)
             return res.status(404).json({ message: "Video not found" });
-        }
+
         res.json({ message: "Video deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting video" });
+        res.status(500).json({ message: error.message });
     }
 };
 
