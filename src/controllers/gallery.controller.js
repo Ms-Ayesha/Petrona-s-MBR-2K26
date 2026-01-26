@@ -21,13 +21,11 @@ async function createGalleryImages(req, res) {
 
         let gallery = await Gallery.findOne({ year, section });
 
-        //store image or image url into the database
         const newImages = req.files.map((file) => ({
             url: file.path,
             cloudinaryId: file.cloudinaryId
         }));
 
-        //push new images into the database if gallery exists
         if (gallery) {
             gallery.images.push(...newImages);
             await gallery.save();
@@ -35,11 +33,13 @@ async function createGalleryImages(req, res) {
             gallery = await Gallery.create({ year, section, images: newImages });
         }
 
-        res.status(201).json({ message: "Images uploaded successfully", data: gallery });
+        // 🔹 Only return the newly uploaded images
+        res.status(201).json({ message: "Images uploaded successfully", data: newImages });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
+
 
 /* ===== GET ALL IMAGES ===== */
 async function getAllImages(req, res) {
