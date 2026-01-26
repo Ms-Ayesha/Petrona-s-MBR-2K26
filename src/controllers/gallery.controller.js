@@ -50,8 +50,21 @@ async function createGalleryImages(req, res) {
             },
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
+        console.error("Gallery creation error:", error);
+        let status = 500;
+        let message = "Image upload failed";
+
+        if (error.message?.includes("503") || error.http_code === 503) {
+            status = 503;
+            message = "Upload service temporarily down (Cloudinary). Please try again in 1-2 minutes.";
+        } else if (error.message?.includes("timeout")) {
+            message = "Upload timed out – file might be too large or connection slow.";
+        } else if (error.message?.includes("File too large")) {
+            status = 413;
+            message = "Each image max 50MB allowed.";
+        }
+
+        return res.status(status).json({ message, error: error.message });
     }
 }
 
