@@ -75,9 +75,9 @@ const createUpload = (folder) => {
                     err
                       ? reject(err)
                       : resolve({
-                          path: result.secure_url,
-                          cloudinaryId: result.public_id,
-                        })
+                        path: result.secure_url,
+                        cloudinaryId: result.public_id,
+                      })
                 );
 
                 streamifier.createReadStream(file.buffer).pipe(stream);

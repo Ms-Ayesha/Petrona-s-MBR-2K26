@@ -5,38 +5,38 @@ const cloudinary = require("../config/cloudinary");
 
 // CREATE GALLERY IMAGES
 exports.createGalleryImages = async (req, res) => {
-  try {
-    const { year, section } = req.body;
+    try {
+        const { year, section } = req.body;
 
-    if (!year || !section)
-      return res.status(400).json({ message: "Year & Section required" });
+        if (!year || !section)
+            return res.status(400).json({ message: "Year & Section required" });
 
-    const yearExists = await Year.findById(year);
-    if (!yearExists) return res.status(404).json({ message: "Year not found" });
+        const yearExists = await Year.findById(year);
+        if (!yearExists) return res.status(404).json({ message: "Year not found" });
 
-    const sectionExists = await Section.findById(section);
-    if (!sectionExists)
-      return res.status(404).json({ message: "Section not found" });
+        const sectionExists = await Section.findById(section);
+        if (!sectionExists)
+            return res.status(404).json({ message: "Section not found" });
 
-    if (!req.files || req.files.length === 0)
-      return res.status(400).json({ message: "Images required" });
+        if (!req.files || req.files.length === 0)
+            return res.status(400).json({ message: "Images required" });
 
-    let gallery = await Gallery.findOne({ year, section });
-    if (!gallery) {
-      gallery = await Gallery.create({ year, section, images: [] });
+        let gallery = await Gallery.findOne({ year, section });
+        if (!gallery) {
+            gallery = await Gallery.create({ year, section, images: [] });
+        }
+
+        gallery.images.push(...req.files);
+        await gallery.save();
+
+        res.status(201).json({
+            message: "Images uploaded successfully",
+            images: req.files,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
     }
-
-    gallery.images.push(...req.files);
-    await gallery.save();
-
-    res.status(201).json({
-      message: "Images uploaded successfully",
-      images: req.files,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-  }
 };
 
 // UPDATE IMAGE
