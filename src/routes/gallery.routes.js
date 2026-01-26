@@ -4,11 +4,11 @@ const createUpload = require("../middlewares/upload.middleware");
 const upload = createUpload("gallery");
 
 const {
-    createGalleryImages,
-    updateImage,
-    deleteImage,
-    getAllImages,
-    getImageById,
+  createGalleryImages,
+  updateImage,
+  deleteImage,
+  getAllImages,
+  getImageById,
 } = require("../controllers/gallery.controller");
 
 router.get("/", getAllImages);

@@ -3,41 +3,57 @@ const Year = require("../models/year.model");
 const Section = require("../models/section.model");
 const cloudinary = require("../config/cloudinary");
 
-// CREATE GALLERY IMAGES
-exports.createGalleryImages = async (req, res) => {
+// CREATE / UPLOAD GALLERY IMAGES
+async function createGalleryImages(req, res) {
     try {
         const { year, section } = req.body;
 
         if (!year || !section)
-            return res.status(400).json({ message: "Year & Section required" });
+            return res.status(400).json({ message: "Year and Section IDs are required" });
 
         const yearExists = await Year.findById(year);
         if (!yearExists) return res.status(404).json({ message: "Year not found" });
 
         const sectionExists = await Section.findById(section);
-        if (!sectionExists)
-            return res.status(404).json({ message: "Section not found" });
+        if (!sectionExists) return res.status(404).json({ message: "Section not found" });
 
         if (!req.files || req.files.length === 0)
-            return res.status(400).json({ message: "Images required" });
+            return res.status(400).json({ message: "At least one image is required" });
 
         let gallery = await Gallery.findOne({ year, section });
         if (!gallery) {
             gallery = await Gallery.create({ year, section, images: [] });
         }
 
-        gallery.images.push(...req.files);
+        // Save uploaded images
+        const newImages = [];
+        for (const file of req.files) {
+            const newImage = { url: file.path, cloudinaryId: file.cloudinaryId };
+            gallery.images.push(newImage);
+            newImages.push(newImage);
+        }
+
         await gallery.save();
+
+        // Map only newly uploaded images with their DB _id
+        const responseImages = gallery.images
+            .slice(-req.files.length)
+            .map((img) => ({ _id: img._id, url: img.url, cloudinaryId: img.cloudinaryId }));
 
         res.status(201).json({
             message: "Images uploaded successfully",
-            images: req.files,
+            data: {
+                _id: gallery._id,
+                year: gallery.year,
+                section: gallery.section,
+                images: responseImages,
+            },
         });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: err.message });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
-};
+}
 
 // UPDATE IMAGE
 async function updateImage(req, res) {

@@ -1,130 +1,109 @@
 const multer = require("multer");
 const cloudinary = require("../config/cloudinary");
-const streamifier = require("streamifier");
 
-// Multer (no disk, no memory save — sirf stream)
+const storage = multer.memoryStorage();
+
 const upload = multer({
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50 MB
-    files: 10,
-  },
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // Max 50 MB per file
   fileFilter: (req, file, cb) => {
-    if (
-      file.mimetype.startsWith("image/") ||
-      file.mimetype === "application/pdf"
-    ) {
+    if (file.mimetype.startsWith("image/") || file.mimetype === "application/pdf") {
       cb(null, true);
     } else {
-      cb(new Error("Only image & PDF files allowed"), false);
+      cb(new Error("Only image and PDF files are allowed!"), false);
     }
   },
 });
 
 const createUpload = (folder) => {
   return {
-    // ================= SINGLE IMAGE =================
-    singleImage: (fieldName = "image") => [
-      upload.single(fieldName),
-      async (req, res, next) => {
-        try {
-          if (!req.file) return next();
+    // Single Image Upload
+    single: (fieldName = "image") => async (req, res, next) => {
+      try {
+        await new Promise((resolve, reject) => {
+          upload.single(fieldName)(req, res, (err) => (err ? reject(err) : resolve()));
+        });
 
-          const result = await new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-              {
-                folder,
-                resource_type: "image",
-                timeout: 120000,
-              },
-              (err, result) => (err ? reject(err) : resolve(result))
-            );
+        if (!req.file) return next();
 
-            streamifier.createReadStream(req.file.buffer).pipe(stream);
-          });
-
-          req.file = {
-            path: result.secure_url,
-            cloudinaryId: result.public_id,
-          };
-
-          next();
-        } catch (err) {
-          console.error("Single image upload error:", err);
-          res.status(500).json({ message: "Image upload failed" });
-        }
-      },
-    ],
-
-    // ================= MULTIPLE IMAGES =================
-    multipleImages: (fieldName = "images", limit = 10) => [
-      upload.array(fieldName, limit),
-      async (req, res, next) => {
-        try {
-          if (!req.files || req.files.length === 0) return next();
-
-          const uploads = req.files.map(
-            (file) =>
-              new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                  {
-                    folder,
-                    resource_type: "image",
-                    timeout: 120000,
-                  },
-                  (err, result) =>
-                    err
-                      ? reject(err)
-                      : resolve({
-                        path: result.secure_url,
-                        cloudinaryId: result.public_id,
-                      })
-                );
-
-                streamifier.createReadStream(file.buffer).pipe(stream);
-              })
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder, resource_type: "image" },
+            (err, res) => (err ? reject(err) : resolve(res))
           );
+          stream.end(req.file.buffer);
+        });
 
-          req.files = await Promise.all(uploads);
-          next();
-        } catch (err) {
-          console.error("Multiple image upload error:", err);
-          res.status(500).json({ message: "Images upload failed" });
-        }
-      },
-    ],
+        req.file.path = result.secure_url;
+        req.file.cloudinaryId = result.public_id;
+        next();
+      } catch (err) {
+        console.error("Single upload middleware error:", err);
+        next(err);
+      }
+    },
 
-    // ================= PDF =================
-    pdf: (fieldName = "pdf") => [
-      upload.single(fieldName),
-      async (req, res, next) => {
-        try {
-          if (!req.file) return next();
+    // PDF Upload
+    pdf: (fieldName = "pdfUrl") => async (req, res, next) => {
+      try {
+        await new Promise((resolve, reject) => {
+          upload.single(fieldName)(req, res, (err) => (err ? reject(err) : resolve()));
+        });
 
+        if (!req.file) return next();
+
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder, resource_type: "raw", timeout: 60000 },
+            (err, res) => (err ? reject(err) : resolve(res))
+          );
+          stream.end(req.file.buffer);
+        });
+
+        req.file.path = result.secure_url;
+        req.file.cloudinaryId = result.public_id;
+        next();
+      } catch (err) {
+        console.error("PDF upload middleware error:", err);
+        res.status(500).json({
+          message: err.message || "PDF upload failed",
+          details: err.name,
+        });
+      }
+    },
+
+    // Multiple Images Upload
+    array: (fieldName = "images", limit = 10) => async (req, res, next) => {
+      try {
+        await new Promise((resolve, reject) => {
+          upload.array(fieldName, limit)(req, res, (err) => (err ? reject(err) : resolve()));
+        });
+
+        if (!req.files || req.files.length === 0) return next();
+
+        const uploadedImages = [];
+        for (const file of req.files) {
           const result = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
-              {
-                folder,
-                resource_type: "raw",
-                timeout: 180000,
-              },
-              (err, result) => (err ? reject(err) : resolve(result))
+              { folder, resource_type: "image" },
+              (err, res) => (err ? reject(err) : resolve(res))
             );
-
-            streamifier.createReadStream(req.file.buffer).pipe(stream);
+            stream.end(file.buffer);
           });
 
-          req.file = {
+          uploadedImages.push({
             path: result.secure_url,
             cloudinaryId: result.public_id,
-          };
-
-          next();
-        } catch (err) {
-          console.error("PDF upload error:", err);
-          res.status(500).json({ message: "PDF upload failed" });
+          });
         }
-      },
-    ],
+
+        req.files = uploadedImages;
+        next();
+      } catch (err) {
+        console.error("Array upload middleware error:", err);
+        next(err);
+      }
+    },
   };
 };
 
