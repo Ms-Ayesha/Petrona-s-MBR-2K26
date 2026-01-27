@@ -8,13 +8,19 @@ const {
   updateImage,
   deleteImage,
   getAllImages,
-  getImageById,
+  getImageById
 } = require("../controllers/gallery.controller");
 
 router.get("/", getAllImages);
 router.get("/:id", getImageById);
-router.post("/", upload.array("images", 20), createGalleryImages); // Max 20 images per request
+
+// Upload single image
+router.post("/", upload.single("image"), createGalleryImages);
+
+// Update single image
 router.put("/:id", upload.single("image"), updateImage);
+
+// Delete single image
 router.delete("/:id", deleteImage);
 
 module.exports = router;
