@@ -54,7 +54,6 @@ const signup = async (req, res) => {
                 message: Object.values(err.errors)[0].message
             });
         }
-
         console.error("Signup error:", err);
         return res.status(500).json({
             message: "Server error"

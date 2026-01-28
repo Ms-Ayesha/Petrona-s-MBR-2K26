@@ -105,8 +105,8 @@ async function deleteImage(req, res) {
 async function getAllImages(req, res) {
     try {
         const galleries = await Gallery.find()
-            .populate("year")
-            .populate("section")
+          .populate("year", "_id")   
+            .populate("section", "_id") 
             .sort({ createdAt: -1 });
         res.json(galleries);
     } catch (error) {
