@@ -13,11 +13,6 @@ const imageSchema = new mongoose.Schema({
 
 const gallerySchema = new mongoose.Schema(
   {
-    year: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Year",
-      required: true
-    },
     section: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Section",
