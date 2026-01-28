@@ -3,7 +3,6 @@ const Year = require("../models/year.model");
 const Section = require("../models/section.model");
 const cloudinary = require("../config/cloudinary");
 
-// Upload a single image to a gallery (one image at a time)
 async function createGalleryImages(req, res) {
     try {
         const { year, section } = req.body;
@@ -20,7 +19,6 @@ async function createGalleryImages(req, res) {
         if (!req.file)
             return res.status(400).json({ message: "Image file is required" });
 
-        // Find gallery for this year & section, or create a new one
         let gallery = await Gallery.findOne({ year, section });
         if (!gallery) {
             gallery = await Gallery.create({ year, section, images: [] });
@@ -65,10 +63,8 @@ async function updateImage(req, res) {
 
         const image = gallery.images.id(id);
 
-        // Delete old image from Cloudinary
         await cloudinary.uploader.destroy(image.cloudinaryId);
 
-        // Update image
         image.url = req.file.path;
         image.cloudinaryId = req.file.cloudinaryId;
 
@@ -78,12 +74,13 @@ async function updateImage(req, res) {
             message: "Image updated successfully",
             data: { _id: image._id, url: image.url, cloudinaryId: image.cloudinaryId }
         });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
 
-// Delete a single image
+//delete the image on cloudinary or database
 async function deleteImage(req, res) {
     try {
         const { id } = req.params;

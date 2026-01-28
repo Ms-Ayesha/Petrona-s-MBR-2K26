@@ -5,11 +5,6 @@ const daySchema = new mongoose.Schema({
     type: String,
     required: true // day1, day2
   },
-  year: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Year",
-    required: true
-  },
   section: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Section",

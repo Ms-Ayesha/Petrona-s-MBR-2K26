@@ -1,16 +1,19 @@
 const router = require("express").Router();
-const {
-  createSection,
-  getSectionsByYear,
-  getSectionById,
-  updateSection,
-  deleteSection
-} = require("../controllers/section.controller");
+const adminMiddleware = require("../middlewares/admin.middleware");
+const authMiddleware = require("../middlewares/auth.middleware");
 
-router.post("/", createSection);
-router.get("/year/:yearId", getSectionsByYear);
-router.get("/:id", getSectionById);
-router.put("/:id", updateSection);
-router.delete("/:id", deleteSection);
+const { createSection, getSectionsByYear, getSectionById, updateSection, deleteSection, getAllSections } = require("../controllers/section.controller");
+
+router.get("/:yearId", authMiddleware, getSectionsByYear);
+
+router.get("/id/:id", authMiddleware, getSectionById);
+
+router.get("/", authMiddleware, getAllSections);
+
+router.post("/", adminMiddleware, createSection);
+
+router.put("/:id", adminMiddleware, updateSection);
+
+router.delete("/:id", adminMiddleware, deleteSection);
 
 module.exports = router;

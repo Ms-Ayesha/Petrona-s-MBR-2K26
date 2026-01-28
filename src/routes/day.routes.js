@@ -1,16 +1,19 @@
 const router = require("express").Router();
-const {
-  createDay,
-  getDays,
-  getDayById,
-  updateDay,
-  deleteDay
-} = require("../controllers/day.controller");
+const adminMiddleware = require("../middlewares/admin.middleware");
+const authMiddleware = require("../middlewares/auth.middleware");
 
-router.post("/", createDay);
-router.get("/:yearId/:sectionId", getDays);
-router.get("/single/:id", getDayById);
-router.put("/:id", updateDay);
-router.delete("/:id", deleteDay);
+const { createDay, getDaysBySection, getDayById, updateDay, deleteDay, getAllDays } = require("../controllers/day.controller");
+
+router.get("/:sectionId", authMiddleware, getDaysBySection);
+
+router.get("/id/:id", authMiddleware, getDayById);
+
+router.post("/", adminMiddleware, createDay);
+
+router.get("/", authMiddleware, getAllDays);
+
+router.put("/:id", adminMiddleware, updateDay);
+
+router.delete("/:id", adminMiddleware, deleteDay);
 
 module.exports = router;

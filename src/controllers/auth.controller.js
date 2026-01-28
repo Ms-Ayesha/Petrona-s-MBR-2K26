@@ -26,7 +26,7 @@ const signup = async (req, res) => {
         const newUser = await User.create({
             name,
             email: email.trim().toLowerCase(),
-            password, // plain password here
+            password,
             phone,
             company,
             country,

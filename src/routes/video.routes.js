@@ -1,16 +1,17 @@
 const router = require("express").Router();
-const {
-  createVideo,
-  getVideoByDay,
-  getVideoById,
-  updateVideo,
-  deleteVideo
-} = require("../controllers/video.controller");
+const adminMiddleware = require("../middlewares/admin.middleware");
+const authMiddleware = require("../middlewares/auth.middleware");
 
-router.post("/", createVideo);
-router.get("/day/:dayId", getVideoByDay);
-router.get("/:id", getVideoById);
-router.put("/:id", updateVideo);
-router.delete("/:id", deleteVideo);
+const { createVideo, getVideoByDay, getVideoById, updateVideo, deleteVideo } = require("../controllers/video.controller");
+
+router.get("/:dayId", authMiddleware, getVideoByDay);
+
+router.get("/id/:id", authMiddleware, getVideoById);
+
+router.post("/", adminMiddleware, createVideo);
+
+router.put("/:id", adminMiddleware, updateVideo);
+
+router.delete("/:id", adminMiddleware, deleteVideo);
 
 module.exports = router;

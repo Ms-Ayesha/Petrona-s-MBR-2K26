@@ -27,7 +27,14 @@ const getSectionsByYear = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
+const getAllSections = async (req, res) => {
+    try {
+        const sections = await Section.find().populate("year").sort({ createdAt: 1 });
+        res.json(sections);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
 const getSectionById = async (req, res) => {
     try {
         const section = await Section.findById(req.params.id);
@@ -74,5 +81,6 @@ module.exports = {
     getSectionsByYear,
     getSectionById,
     updateSection,
-    deleteSection
+    deleteSection,
+    getAllSections
 };
