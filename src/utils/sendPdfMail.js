@@ -6,7 +6,9 @@ const path = require("path");
 const sendPdfMail = async (to, pdfUrl, stationName) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -29,7 +31,7 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
       attachments: [
         {
           filename: `${stationName}.pdf`,
-          content: pdfResponse.data, 
+          content: pdfResponse.data,
           contentType: "application/pdf",
         },
       ],

@@ -23,40 +23,45 @@ const signup = async (req, res) => {
             });
         }
 
-        const newUser = await User.create({
+        const activationToken = generateToken(
+            { email: email.trim().toLowerCase() },
+            "24h"
+        );
+
+        const activationLink = `${process.env.BACKEND_URL}/api/auth/activate/${activationToken}`;
+
+        await sendEmail(
+            email.trim().toLowerCase(),
+            "Activate Your MBR Account",
+            "confirmEmail.html",
+            {
+                name,
+                company,
+                designation,
+                country,
+                activationLink
+            }
+        );
+
+        await User.create({
             name,
             email: email.trim().toLowerCase(),
             password,
             phone,
             company,
             country,
-            designation,
+            designation
         });
 
-        const activationToken = generateToken({ id: newUser._id }, "24h");
-
-        const activationLink = `${process.env.BACKEND_URL}/api/auth/activate/${activationToken}`;
-
-        await sendEmail(
-            newUser.email,
-            "Activate Your MBR Account",
-            "confirmEmail.html",
-            { name, company, designation, country, activationLink }
-        );
-
         return res.status(201).json({
-            message: "Please check your email and click the activation link.",
+            message: "Please check your email and click the activation link."
         });
 
     } catch (err) {
-        if (err.name === "ValidationError") {
-            return res.status(400).json({
-                message: Object.values(err.errors)[0].message
-            });
-        }
         console.error("Signup error:", err);
+
         return res.status(500).json({
-            message: "Server error"
+            message: "Signup failed. Email could not be sent."
         });
     }
 };
