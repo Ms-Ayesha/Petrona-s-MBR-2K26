@@ -31,10 +31,6 @@ const userSchema = new mongoose.Schema(
         phone: {
             type: String,
             required: [true, "Phone number is required"],
-            match: [
-                /^[0-9]{10,15}$/,
-                "Phone number must be 10 to 15 digits"
-            ]
         },
 
         company: {
