@@ -8,30 +8,40 @@ const sendEmail = require("../utils/sendEmail");
 const generateToken = (payload, expiresIn = "24h") => {
     return jwt.sign(payload, secret, { expiresIn });
 };
-
 const signup = async (req, res) => {
     const { name, email, password, phone, company, country, designation } = req.body;
 
     try {
-        const existingUser = await User.findOne({
-            email: email.trim().toLowerCase()
-        });
+        const cleanEmail = email.trim().toLowerCase();
 
+        const existingUser = await User.findOne({ email: cleanEmail });
         if (existingUser) {
-            return res.status(400).json({
-                message: "Email already exists"
-            });
+            return res.status(400).json({ message: "Email already exists" });
         }
 
+        // ✅ create user first
+        const user = await User.create({
+            name,
+            email: cleanEmail,
+            password,
+            phone,
+            company,
+            country,
+            designation,
+            status: false
+        });
+
+        // ✅ token with id
         const activationToken = generateToken(
-            { email: email.trim().toLowerCase() },
+            { id: user._id },
             "24h"
         );
 
-        const activationLink = `${process.env.BACKEND_URL}/api/auth/activate/${activationToken}`;
+        const activationLink =
+            `${process.env.BACKEND_URL}/api/auth/activate/${activationToken}`;
 
         await sendEmail(
-            email.trim().toLowerCase(),
+            cleanEmail,
             "Activate Your MBR Account",
             "confirmEmail.html",
             {
@@ -43,28 +53,16 @@ const signup = async (req, res) => {
             }
         );
 
-        await User.create({
-            name,
-            email: email.trim().toLowerCase(),
-            password,
-            phone,
-            company,
-            country,
-            designation
-        });
-
         return res.status(201).json({
             message: "Please check your email and click the activation link."
         });
 
     } catch (err) {
         console.error("Signup error:", err);
-
-        return res.status(500).json({
-            message: "Signup failed. Email could not be sent."
-        });
+        res.status(500).json({ message: "Signup failed" });
     }
 };
+
 
 const activateAccount = async (req, res) => {
     const { token } = req.params;
