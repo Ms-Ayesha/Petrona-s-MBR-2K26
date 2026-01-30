@@ -8,18 +8,22 @@ const sendEmail = require("../utils/sendEmail");
 const generateToken = (payload, expiresIn = "24h") => {
     return jwt.sign(payload, secret, { expiresIn });
 };
+
 const signup = async (req, res) => {
-    const { name, email, password, phone, company, country, designation } = req.body;
-
     try {
-        const cleanEmail = email.trim().toLowerCase();
+        const {
+            name,
+            email,
+            password,
+            phone,
+            company,
+            country,
+            designation
+        } = req.body;
 
-        const existingUser = await User.findOne({ email: cleanEmail });
-        if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" });
-        }
+        const cleanEmail = email?.trim().toLowerCase();
 
-        // ✅ create user first
+        // create user (mongoose handles all validations)
         const user = await User.create({
             name,
             email: cleanEmail,
@@ -31,11 +35,7 @@ const signup = async (req, res) => {
             status: false
         });
 
-        // ✅ token with id
-        const activationToken = generateToken(
-            { id: user._id },
-            "24h"
-        );
+        const activationToken = generateToken({ id: user._id }, "24h");
 
         const activationLink =
             `${process.env.BACKEND_URL}/api/auth/activate/${activationToken}`;
@@ -59,11 +59,39 @@ const signup = async (req, res) => {
 
     } catch (err) {
         console.error("Signup error:", err);
-        res.status(500).json({ message: "Signup failed" });
+
+        // ✅ Mongoose validation errors
+        if (err.name === "ValidationError") {
+            const errors = Object.keys(err.errors).map((key) => ({
+                field: key,
+                message: err.errors[key].message
+            }));
+
+            return res.status(400).json({ errors });
+        }
+
+        // ✅ duplicate email
+        if (err.code === 11000) {
+            return res.status(400).json({
+                errors: [
+                    {
+                        field: "email",
+                        message: "Email already exists"
+                    }
+                ]
+            });
+        }
+
+        return res.status(500).json({
+            errors: [
+                {
+                    field: "server",
+                    message: "Something went wrong"
+                }
+            ]
+        });
     }
 };
-
-
 const activateAccount = async (req, res) => {
     const { token } = req.params;
 
