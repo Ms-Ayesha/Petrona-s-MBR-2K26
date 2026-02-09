@@ -1,74 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Account Confirmation</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: #333;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f7f7f7;
-        }
-        .email-container {
-            max-width: 650px;
-            margin: 20px auto;
-            background-color: #fff;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .content {
-            padding: 30px 25px;
-            text-align: center;
-        }
-        h2 {
-            color: #007b8f;
-            margin-bottom: 15px;
-        }
-        .details p {
-            margin: 8px 0;
-            font-size: 16px;
-        }
-        a.button {
-            display: inline-block;
-            margin: 20px 0;
-            padding: 12px 25px;
-            background-color: #007b8f;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-        .footer {
-            font-size: 12px;
-            color: #888;
-            padding: 15px;
-            text-align: center;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation</title>
+
 </head>
-<body>
-  <div class="email-container">
-    <div class="content">
-      <h2>Dear {{name}},</h2>
-      <p>Thank you for registering with the MBR Platform!</p>
-      <p>Your account has been created with the following details:</p>
-      <div class="details">
-        <p><strong>Company:</strong> {{company}}</p>
-        <p><strong>Designation:</strong> {{designation}}</p>
-        <p><strong>Country:</strong> {{country}}</p>
-      </div>
-      <p>To complete your registration and activate your account, please click the button below:</p>
-      <a class="button" href="{{activationLink}}">Activate My Account</a>
-      <p>This link is valid for 24 hours.</p>
-      <p>If you did not register, please ignore this email.</p>
+
+<body style="margin: 0; padding: 0; font-family: sans-serif; background-color: #ffffff;">
+    <div class="container" style="max-width: 700px; margin: 0 auto; padding: 50px 20px; text-align: center;">
+        <img src="header-img.png" alt="Header Image" style="max-width: 100%; height: auto;" height="auto">
+        <div class="main-div" style="text-align: center; padding: 40px 20px;">
+            <h3 style="font-size: 23px; color: rgba(0, 161, 156, 1); font-family: sans-serif; margin: 20px 0 10px 0;">
+                Dear [Name],<br>
+                Congratulations!
+            </h3>
+            <p class="p-1" style="margin: 15px 0; font-size: 20px; font-family: sans-serif;">
+                Your account has been successfully created with the following details
+            </p>
+            <h4><a href style="font-size: 23px; font-weight: 400; color: rgba(0, 161, 156, 1);">Company</a></h4>
+            <p style="font-size: 23px; font-family: sans-serif; margin: 15px 0;">Company Big Bash Media Sdn Bhd</p>
+            <h4><a href style="font-size: 23px; font-weight: 400; color: rgba(0, 161, 156, 1);">Position</a></h4>
+            <p style="font-size: 23px; font-family: sans-serif; margin: 15px 0;">Others</p>
+            <h4><a href style="font-size: 23px; font-weight: 400; color: rgba(0, 161, 156, 1);">Country</a></h4>
+            <p style="font-size: 23px; font-family: sans-serif; margin: 15px 0;">Malaysia</p>
+            <p class="p-1" style="margin: 15px 0; font-size: 20px; font-family: sans-serif;">
+                To activate your account, please click the link below:
+            </p>
+            <h3 style="font-size: 23px; color: rgba(0, 161, 156, 1); font-family: sans-serif; margin: 20px 0 10px 0;"><a
+                    href
+                    style="font-size: 23px; color: rgba(0, 161, 156, 1); font-family: sans-serif; font-style: italic;">Activate
+                    Account</a></h3>
+            <h3 style="font-size: 23px; color: rgba(0, 161, 156, 1); font-family: sans-serif; margin: 20px 0 10px 0;">
+                Thank you!</h3>
+            <span
+                style="font-size: 15px; font-family: Arial, Helvetica, sans-serif; color: rgba(65, 65, 65, 1); display: block; margin-top: 20px;">
+                For any issues with activation, please contact our administrator at
+                mbr-query@petronas.com. Otherwise, you may ignore this email.
+            </span>
+        </div>
     </div>
-    <div class="footer">
-      For support, contact: <a href="mailto:mbr-query@petronas.com.my">mbr-query@petronas.com.my</a>
-    </div>
-  </div>
 </body>
+
 </html>

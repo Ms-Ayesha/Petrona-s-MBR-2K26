@@ -1,4 +1,3 @@
-// src/controllers/auth.controller.js
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -23,7 +22,6 @@ const signup = async (req, res) => {
 
         const cleanEmail = email?.trim().toLowerCase();
 
-        // create user (mongoose handles all validations)
         const user = await User.create({
             name,
             email: cleanEmail,
@@ -60,7 +58,6 @@ const signup = async (req, res) => {
     } catch (err) {
         console.error("Signup error:", err);
 
-        // ✅ Mongoose validation errors
         if (err.name === "ValidationError") {
             const errors = Object.keys(err.errors).map((key) => ({
                 field: key,
@@ -70,7 +67,6 @@ const signup = async (req, res) => {
             return res.status(400).json({ errors });
         }
 
-        // ✅ duplicate email
         if (err.code === 11000) {
             return res.status(400).json({
                 errors: [
@@ -92,6 +88,7 @@ const signup = async (req, res) => {
         });
     }
 };
+
 const activateAccount = async (req, res) => {
     const { token } = req.params;
 
