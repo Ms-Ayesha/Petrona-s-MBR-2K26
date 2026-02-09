@@ -65,6 +65,7 @@ app.use("/api/sections", sectionRoutes);
 app.use("/api/days", dayRoutes);
 app.use("/api/videos", videoRoutes);
 app.use("/api/gallery", galleryRoutes);
+app.use('/images', express.static('public/images'));
 
 
 
