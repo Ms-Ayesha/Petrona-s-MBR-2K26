@@ -51,10 +51,7 @@ const userSchema = new mongoose.Schema(
         designation: {
             type: String,
             required: [true, "Designation is required"],
-            enum: {
-                values: ["Developer", "Manager", "Student", "Other"],
-                message: "Invalid designation selected"
-            }
+           
         },
 
         status: {
