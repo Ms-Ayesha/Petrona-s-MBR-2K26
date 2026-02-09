@@ -1,10 +1,9 @@
-// src/utils/sendEmail.js
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
 
 const sendEmail = async (to, subject, templateName, variables = {}) => {
-  // Load the HTML template
+  // Load HTML template
   const templatePath = path.join(__dirname, "../Template", templateName);
   let html = fs.readFileSync(templatePath, "utf8");
 
@@ -14,18 +13,18 @@ const sendEmail = async (to, subject, templateName, variables = {}) => {
     html = html.replace(regex, variables[key]);
   });
 
-  // SMTP transporter (like sendPdfMail)
+  // Create transporter
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,      // SMTP host
-    port: process.env.SMTP_PORT,      // SMTP port
-    secure: true,                      // true for port 465, false for 587
+    host: process.env.SMTP_HOST,           // petronasmbr.com
+    port: 465,  // 465
+    secure: true,                          // true for 465
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
   });
 
-  // Send the email
+  // Send email
   await transporter.sendMail({
     from: `"MBR Platform" <${process.env.EMAIL_USER}>`,
     to,
@@ -33,7 +32,7 @@ const sendEmail = async (to, subject, templateName, variables = {}) => {
     html,
   });
 
-  console.log("Email sent successfully via SMTP");
+  console.log(`Email sent successfully to ${to}`);
 };
 
 module.exports = sendEmail;

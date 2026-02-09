@@ -1,16 +1,15 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,      // mail.petronasmbr.com
-  port: Number(process.env.SMTP_PORT), // 465
-  secure: true,                      // SSL
+  host: process.env.SMTP_HOST,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,       // optional, kabhi SSL cert problem ke liye
-  },
+  debug: true, // show detailed logs
 });
+
 
 module.exports = transporter;
