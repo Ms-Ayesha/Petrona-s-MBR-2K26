@@ -1,26 +1,27 @@
-const nodemailer = require("nodemailer");
+// src/utils/sendPdfMail.js
+
+const transporter = require("../config/mail"); // ✅ use shared transporter
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 
 const sendPdfMail = async (to, pdfUrl, stationName) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
+    // download pdf
     const pdfResponse = await axios.get(pdfUrl, {
       responseType: "arraybuffer",
     });
 
-    const templatePath = path.join(__dirname, "../Template/pdfMailTemplate.html");
+    // load html template
+    const templatePath = path.join(
+      __dirname,
+      "../Template/pdfMailTemplate.html"
+    );
+
     let html = fs.readFileSync(templatePath, "utf8");
     html = html.replace(/{{stationName}}/g, stationName);
 
+    // send mail using DOMAIN SMTP (not gmail)
     await transporter.sendMail({
       from: `"Station System" <${process.env.EMAIL_USER}>`,
       to,
@@ -35,10 +36,10 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
       ],
     });
 
-    console.log("Email sent successfully");
+    console.log("✅ PDF Email sent successfully");
     return { message: "Email sent successfully" };
   } catch (error) {
-    console.error(" Email send error:", error.message);
+    console.error("❌ Email send error:", error.message);
     throw new Error(`Email failed: ${error.message}`);
   }
 };
