@@ -36,10 +36,10 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
       ],
     });
 
-    console.log("✅ PDF Email sent successfully");
+    console.log(" PDF Email sent successfully");
     return { message: "Email sent successfully" };
   } catch (error) {
-    console.error("❌ Email send error:", error.message);
+    console.error(" Email send error:", error.message);
     throw new Error(`Email failed: ${error.message}`);
   }
 };
