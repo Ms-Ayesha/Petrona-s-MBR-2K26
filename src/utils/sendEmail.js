@@ -2,6 +2,7 @@
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
+const imagePath = path.join(__dirname, "../public/images/header-img.png");
 
 const sendEmail = async (to, subject, templateName, variables = {}) => {
   const templatePath = path.join(__dirname, "../Template", templateName);
@@ -21,12 +22,20 @@ const sendEmail = async (to, subject, templateName, variables = {}) => {
     },
   });
 
-  await transporter.sendMail({
-    from: `"MBR Platform" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+
+await transporter.sendMail({
+  from: `"MBR Platform" <${process.env.EMAIL_USER}>`,
+  to,
+  subject,
+  html,
+  attachments: [
+    {
+      filename: "header-img.png",
+      path: imagePath,
+      cid: "headerimg",
+    },
+  ],
+});
 };
 
 module.exports = sendEmail;
