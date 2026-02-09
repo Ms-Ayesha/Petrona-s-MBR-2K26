@@ -20,7 +20,7 @@ transporter.verify((error, success) => {
   if (error) {
     console.error("SMTP verify failed:", error);
   } else {
-    console.log("SMTP connection OK");
+    console.log("SMTP connection are OK");
   }
 });
 
