@@ -20,7 +20,7 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
     const opportunityType = isExploration
       ? "Exploration Blocks"
       : "DRO";
-
+wqsss
     const subject = `${opportunityType} Opportunities on Offer | MBR2026`;
 
     // ✅ NEW → attachment filename logic

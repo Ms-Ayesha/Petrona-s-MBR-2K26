@@ -40,8 +40,9 @@ const signup = async (req, res) => {
 
         await sendEmail(
             cleanEmail,
-            "Activate Your MBR Account",
+            "Activate Your Account_Malaysia Bid Round 2026",
             "confirmEmail.html",
+
             {
                 name,
                 company,
@@ -182,8 +183,9 @@ const forgotPassword = async (req, res) => {
 
         await sendEmail(
             email,
-            "Password Reset Request",
+            "Password Reset Request_Malaysia Bid Round 2026",
             "resetpassword.html",
+
             { name: user.name, resetLink }
         );
 

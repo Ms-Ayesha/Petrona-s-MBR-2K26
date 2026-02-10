@@ -22,9 +22,10 @@ const sendEmail = async (to, subject, templateName, variables = {}) => {
   });
 
   await transporter.sendMail({
-    from: `"MBR Platform" <${process.env.EMAIL_USER}>`,
+    // ✅ SAME NAME for ALL emails
+    from: `"Malaysia Bid Round 2026" <${process.env.EMAIL_USER}>`,
     to,
-    subject,
+    subject, // ✅ dynamic subject
     html,
   });
 };
