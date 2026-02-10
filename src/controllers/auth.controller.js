@@ -22,6 +22,7 @@ const signup = async (req, res) => {
 
         const cleanEmail = email?.trim().toLowerCase();
 
+        // ✅ SAVE USER FIRST
         const user = await User.create({
             name,
             email: cleanEmail,
@@ -29,25 +30,34 @@ const signup = async (req, res) => {
             phone,
             company,
             country,
-            designation,
-            status: false
+            designation
         });
 
-       
+        console.log("User saved:", user._id);
 
-        await sendEmail(
+        // ✅ SEND RESPONSE IMMEDIATELY
+        res.status(201).json({
+            message: "Account created successfully. You can now login.",
+            user: {
+                name,
+                email: cleanEmail
+            }
+        });
+
+        // ✅ EMAIL IN BACKGROUND (DON'T AWAIT)
+        sendEmail(
             cleanEmail,
-            "Activate Your Account_Malaysia Bid Round 2026",
+            "Welcome to Your Account_Malaysia Bid Round 2026",
             "confirmEmail.html",
-
             {
                 name,
                 company,
                 designation,
                 country,
             }
-        );
-
+        ).catch(err => {
+            console.log("Email failed but user saved:", err.message);
+        });
 
     } catch (err) {
         console.error("Signup error:", err);
@@ -63,25 +73,22 @@ const signup = async (req, res) => {
 
         if (err.code === 11000) {
             return res.status(400).json({
-                errors: [
-                    {
-                        field: "email",
-                        message: "Email already exists"
-                    }
-                ]
+                errors: [{
+                    field: "email",
+                    message: "Email already exists"
+                }]
             });
         }
 
         return res.status(500).json({
-            errors: [
-                {
-                    field: "server",
-                    message: "Something went wrong"
-                }
-            ]
+            errors: [{
+                field: "server",
+                message: "Something went wrong"
+            }]
         });
     }
 };
+
 
 // const activateAccount = async (req, res) => {
 //     const { token } = req.params;
