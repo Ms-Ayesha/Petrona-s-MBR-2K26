@@ -10,17 +10,23 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
        STATION BASED CONFIG
     ============================== */
 
-    const explorationStations = ["station 1", "station 2"]; // case insensitive
+    const explorationStations = ["station 1", "station 2"]; // add more if needed
 
     const isExploration = explorationStations
       .map(s => s.toLowerCase())
       .includes(stationName.toLowerCase());
 
+    // Subject + body text
     const opportunityType = isExploration
       ? "Exploration Blocks"
       : "DRO";
 
     const subject = `${opportunityType} Opportunities on Offer | MBR2026`;
+
+    // ✅ NEW → attachment filename logic
+    const fileName = isExploration
+      ? "Exploration Blocks Factsheet.pdf"
+      : "Dro Factsheet.pdf";
 
     const senderName = "Malaysia Bid Round 2026";
     const senderEmail = "malaysiabidround@gmail.com";
@@ -38,6 +44,7 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
       },
     });
 
+
     /* ==============================
        DOWNLOAD PDF
     ============================== */
@@ -45,6 +52,7 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
     const pdfResponse = await axios.get(pdfUrl, {
       responseType: "arraybuffer",
     });
+
 
     /* ==============================
        HTML TEMPLATE
@@ -54,6 +62,7 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
     let html = fs.readFileSync(templatePath, "utf8");
 
     html = html.replace(/{{opportunityType}}/g, opportunityType);
+
 
     /* ==============================
        SEND MAIL
@@ -66,7 +75,7 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
       html,
       attachments: [
         {
-          filename: `${stationName}.pdf`,
+          filename: fileName,   // ✅ changed here (dynamic name)
           content: pdfResponse.data,
           contentType: "application/pdf",
         },
