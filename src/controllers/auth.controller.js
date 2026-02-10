@@ -33,10 +33,7 @@ const signup = async (req, res) => {
             status: false
         });
 
-        const activationToken = generateToken({ id: user._id }, "24h");
-
-        const activationLink =
-            `${process.env.BACKEND_URL}/api/auth/activate/${activationToken}`;
+       
 
         await sendEmail(
             cleanEmail,
@@ -48,13 +45,9 @@ const signup = async (req, res) => {
                 company,
                 designation,
                 country,
-                activationLink
             }
         );
 
-        return res.status(201).json({
-            message: "Please check your email and click the activation link."
-        });
 
     } catch (err) {
         console.error("Signup error:", err);
@@ -90,39 +83,40 @@ const signup = async (req, res) => {
     }
 };
 
-const activateAccount = async (req, res) => {
-    const { token } = req.params;
+// const activateAccount = async (req, res) => {
+//     const { token } = req.params;
 
-    try {
-        const decoded = jwt.verify(token, secret);
-        const user = await User.findById(decoded.id);
+//     try {
+//         const decoded = jwt.verify(token, secret);
+//         const user = await User.findById(decoded.id);
 
-        if (!user) {
-            return res.send("<h2 style='color:red; text-align:center;'>Invalid Link</h2>");
-        }
+//         if (!user) {
+//             return res.send("<h2 style='color:red; text-align:center;'>Invalid Link</h2>");
+//         }
 
-        if (user.status) {
-            return res.send("<h2 style='color:green; text-align:center;'>Account Already Activated</h2>");
-        }
-        user.status = true;
-        await user.save();
+//         if (user.status) {
+//             return res.send("<h2 style='color:green; text-align:center;'>Account Already Activated</h2>");
+//         }
+//         user.status = true;
+//         await user.save();
 
-        return res.send(`
-      <div style="text-align:center; margin-top:100px; font-family:Arial;">
-        <h1 style="color:green;">✓ Account Activated Successfully!</h1>
-        <p>You can now log in with your email and password.</p>
-      </div>
-    `);
-    } catch (err) {
-        console.error("Activation error:", err);
-        return res.send(`
-      <div style="text-align:center; margin-top:100px; font-family:Arial;">
-        <h1 style="color:red;">Link Expired or Invalid</h1>
-        <p>Please register again.</p>
-      </div>
-    `);
-    }
-};
+//         return res.send(`
+//       <div style="text-align:center; margin-top:100px; font-family:Arial;">
+//         <h1 style="color:green;">✓ Account Activated Successfully!</h1>
+//         <p>You can now log in with your email and password.</p>
+//       </div>
+//     `);
+//     } catch (err) {
+//         console.error("Activation error:", err);
+//         return res.send(`
+//       <div style="text-align:center; margin-top:100px; font-family:Arial;">
+//         <h1 style="color:red;">Link Expired or Invalid</h1>
+//         <p>Please register again.</p>
+//       </div>
+//     `);
+//     }
+// };
+
 const login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -137,9 +131,6 @@ const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" });
         }
 
-        if (!user.status) {
-            return res.status(400).json({ message: "Please activate your account by clicking the link in your email" });
-        }
 
         const token = jwt.sign({ id: user._id }, secret, { expiresIn: "24h" });
 
