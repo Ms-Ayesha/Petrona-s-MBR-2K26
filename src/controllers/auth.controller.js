@@ -36,7 +36,7 @@ const signup = async (req, res) => {
 
     // Respond to client with full user data (excluding internal DB fields if needed)
     return res.status(201).json({
-      message: "User registered successfully. Please check your email.",
+      message: "User registered successfully. welcome email sent.",
       user: {
         name: user.name,
         email: user.email,
