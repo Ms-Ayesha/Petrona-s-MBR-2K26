@@ -22,7 +22,7 @@ const signup = async (req, res) => {
 
         const cleanEmail = email?.trim().toLowerCase();
 
-        // ✅ SAVE USER FIRST
+        // 1️⃣ Save user FIRST
         const user = await User.create({
             name,
             email: cleanEmail,
@@ -33,30 +33,28 @@ const signup = async (req, res) => {
             designation
         });
 
-        console.log("User saved:", user._id);
-
-        // ✅ SEND RESPONSE IMMEDIATELY
+        // 2️⃣ Send response immediately
         res.status(201).json({
-            message: "Account created successfully. You can now login.",
+            message: "Account created successfully. Welcome email sent.",
             user: {
                 name,
                 email: cleanEmail
             }
         });
 
-        // ✅ EMAIL IN BACKGROUND (DON'T AWAIT)
+        // 3️⃣ Send email in background (does NOT break API)
         sendEmail(
             cleanEmail,
-            "Welcome to Your Account_Malaysia Bid Round 2026",
+            "Welcome to Malaysia Bid Round 2026",
             "confirmEmail.html",
             {
                 name,
                 company,
                 designation,
-                country,
+                country
             }
         ).catch(err => {
-            console.log("Email failed but user saved:", err.message);
+            console.error("Email failed:", err.message);
         });
 
     } catch (err) {
@@ -67,7 +65,6 @@ const signup = async (req, res) => {
                 field: key,
                 message: err.errors[key].message
             }));
-
             return res.status(400).json({ errors });
         }
 
@@ -88,7 +85,6 @@ const signup = async (req, res) => {
         });
     }
 };
-
 
 // const activateAccount = async (req, res) => {
 //     const { token } = req.params;
