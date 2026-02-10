@@ -9,81 +9,69 @@ const generateToken = (payload, expiresIn = "24h") => {
 };
 
 const signup = async (req, res) => {
-    try {
-        const {
-            name,
-            email,
-            password,
-            phone,
-            company,
-            country,
-            designation
-        } = req.body;
+  try {
+    const { name, email, password, phone, company, country, designation } = req.body;
 
-        const cleanEmail = email?.trim().toLowerCase();
+    // Clean email
+    const cleanEmail = email?.trim().toLowerCase();
 
-        // 1️⃣ Save user FIRST
-        const user = await User.create({
-            name,
-            email: cleanEmail,
-            password,
-            phone,
-            company,
-            country,
-            designation
-        });
+    // Create new user (no status, no activation)
+    const user = await User.create({
+      name,
+      email: cleanEmail,
+      password, // consider hashing later
+      phone,
+      company,
+      country,
+      designation,
+    });
 
-        // 2️⃣ Send response immediately
-        res.status(201).json({
-            message: "Account created successfully. Welcome email sent.",
-            user: {
-                name,
-                email: cleanEmail
-            }
-        });
+    // Send welcome email
+    await sendEmail(
+      cleanEmail,
+      "Welcome to MBR",
+      "confirmEmail.html",
+      { name, company, designation, country }
+    );
 
-        // 3️⃣ Send email in background (does NOT break API)
-        sendEmail(
-            cleanEmail,
-            "Welcome to Malaysia Bid Round 2026",
-            "confirmEmail.html",
-            {
-                name,
-                company,
-                designation,
-                country
-            }
-        ).catch(err => {
-            console.error("Email failed:", err.message);
-        });
+    // Respond to client with full user data (excluding internal DB fields if needed)
+    return res.status(201).json({
+      message: "User registered successfully. Please check your email.",
+      user: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        company: user.company,
+        country: user.country,
+        designation: user.designation,
+        _id: user._id, // optional
+      },
+    });
 
-    } catch (err) {
-        console.error("Signup error:", err);
+  } catch (err) {
+    console.error("Signup error:", err);
 
-        if (err.name === "ValidationError") {
-            const errors = Object.keys(err.errors).map((key) => ({
-                field: key,
-                message: err.errors[key].message
-            }));
-            return res.status(400).json({ errors });
-        }
-
-        if (err.code === 11000) {
-            return res.status(400).json({
-                errors: [{
-                    field: "email",
-                    message: "Email already exists"
-                }]
-            });
-        }
-
-        return res.status(500).json({
-            errors: [{
-                field: "server",
-                message: "Something went wrong"
-            }]
-        });
+    // Validation errors
+    if (err.name === "ValidationError") {
+      const errors = Object.keys(err.errors).map((key) => ({
+        field: key,
+        message: err.errors[key].message,
+      }));
+      return res.status(400).json({ errors });
     }
+
+    // Duplicate key error (email already exists)
+    if (err.code === 11000) {
+      return res.status(400).json({
+        errors: [{ field: "email", message: "Email already exists" }],
+      });
+    }
+
+    // General server error
+    return res.status(500).json({
+      errors: [{ field: "server", message: "Something went wrong" }],
+    });
+  }
 };
 
 // const activateAccount = async (req, res) => {
