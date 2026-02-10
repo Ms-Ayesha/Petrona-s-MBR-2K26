@@ -29,7 +29,7 @@ const signup = async (req, res) => {
     // Send welcome email
     await sendEmail(
       cleanEmail,
-      "Welcome to MBR",
+      "Welcome to Your Account_Malaysia Bid Round 2026",
       "confirmEmail.html",
       { name, company, designation, country }
     );
