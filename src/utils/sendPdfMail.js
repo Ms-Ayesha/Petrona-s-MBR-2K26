@@ -1,7 +1,7 @@
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const transporter = require("../config/mail"); // ✅ IMPORT ONLY
+const transporter = require("../config/mail"); 
 
 const sendPdfMail = async (to, pdfUrl, stationName) => {
   try {
@@ -32,7 +32,6 @@ const sendPdfMail = async (to, pdfUrl, stationName) => {
     let html = fs.readFileSync(templatePath, "utf8");
     html = html.replace(/{{opportunityType}}/g, opportunityType);
 
-    /* SEND */
     await transporter.sendMail({
       from: `"Malaysia Bid Round 2026" <${process.env.EMAIL_USER}>`,
       to,
