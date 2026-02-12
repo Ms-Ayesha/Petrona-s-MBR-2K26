@@ -1,6 +1,9 @@
 const dotenv = require("dotenv");
 dotenv.config(); // Must be first
 
+const dns = require("node:dns");           // or "dns/promises" in newer Node
+dns.setServers(["1.1.1.1", "8.8.8.8"]);    // Cloudflare + Google public DNS
+
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
@@ -81,5 +84,9 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
+
+
+
+
 
 module.exports = app;

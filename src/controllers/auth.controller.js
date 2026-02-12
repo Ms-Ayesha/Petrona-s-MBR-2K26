@@ -39,7 +39,7 @@ const signup = async (req, res) => {
       message: "User registered successfully. welcome email sent.",
       user: {
         name: user.name,
-        email: user.email, 
+        email: user.email,
         phone: user.phone,
         company: user.company,
         country: user.country,
